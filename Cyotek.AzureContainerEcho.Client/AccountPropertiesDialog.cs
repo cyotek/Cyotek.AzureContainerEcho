@@ -2,9 +2,6 @@
 using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Auth;
-using Microsoft.WindowsAzure.Storage.Blob;
 
 namespace Cyotek.AzureContainerEcho.Client
 {
@@ -28,6 +25,7 @@ namespace Cyotek.AzureContainerEcho.Client
       minutesNumericUpDown.Value = Math.Max(minutesNumericUpDown.Minimum, Math.Min(minutesNumericUpDown.Maximum, (decimal)options.Interval.TotalMinutes));
       allowUploadsCheckBox.Checked = options.AllowUploads;
       newFilesOnlyCheckBox.Checked = options.CheckForNewFilesOnly;
+      enabledCheckBox.Checked = options.Enabled;
     }
 
     #endregion
@@ -161,6 +159,7 @@ namespace Cyotek.AzureContainerEcho.Client
         this.Options.Interval = TimeSpan.FromMinutes((double)minutesNumericUpDown.Value);
         this.Options.AllowUploads = allowUploadsCheckBox.Checked;
         this.Options.CheckForNewFilesOnly = newFilesOnlyCheckBox.Checked;
+        this.Options.Enabled = enabledCheckBox.Checked;
 
         this.DialogResult = DialogResult.OK;
         this.Close();
@@ -173,22 +172,20 @@ namespace Cyotek.AzureContainerEcho.Client
       {
         try
         {
-          StorageCredentials credentials;
-          CloudStorageAccount account;
-          CloudBlobClient client;
-          CloudBlobContainer container;
+          bool containerExists;
           string suffix;
 
           this.Enabled = false;
           Application.DoEvents(); // HACK: Evil but thats what I get for being lazy
 
-          credentials = new StorageCredentials(accountNameTextBox.Text, accessKeyTextBox.Text);
-          account = new CloudStorageAccount(credentials, true);
-          client = account.CreateCloudBlobClient();
-          client.GetServiceProperties(); // this bit validates that the connection settings are valid
+          containerExists = new EchoScheduledTaskOptions
+          {
+            AccountName = accountNameTextBox.Text,
+            AccountKey = accessKeyTextBox.Text,
+            ContainerName = containerTextBox.Text
+          }.DoesContainerExist();
 
-          container = client.GetContainerReference(containerTextBox.Text);
-          suffix = container.Exists() ? "." : ", however the specified container does not exist.";
+          suffix = containerExists ? "." : ", however the specified container does not exist.";
 
           MessageBox.Show(string.Concat("Connection successfull", suffix), "Test Connection", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }

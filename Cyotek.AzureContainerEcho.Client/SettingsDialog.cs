@@ -113,6 +113,7 @@ namespace Cyotek.AzureContainerEcho.Client
         if (originalJob != null && !options.Equals(originalJob))
         {
           this.Manager.KillJob(originalJob.Id);
+
           this.Manager.Schedule(options);
         }
       }

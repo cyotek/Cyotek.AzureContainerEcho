@@ -1,4 +1,7 @@
 ﻿using System;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Auth;
+using Microsoft.WindowsAzure.Storage.Blob;
 
 namespace Cyotek.AzureContainerEcho
 {
@@ -9,6 +12,7 @@ namespace Cyotek.AzureContainerEcho
 
     public EchoScheduledTaskOptions()
     {
+      this.Enabled = true;
       this.Id = Guid.NewGuid();
     }
 
@@ -32,6 +36,10 @@ namespace Cyotek.AzureContainerEcho
 
     public bool CheckForNewFilesOnly { get; set; }
 
+    public DateTime? LastRun { get; set; }
+
+    public bool Enabled { get; set; }
+
     #endregion
 
     #region Members
@@ -43,7 +51,7 @@ namespace Cyotek.AzureContainerEcho
 
     public bool Equals(EchoScheduledTaskOptions obj)
     {
-      return obj != null && this.Id == obj.Id && this.AccountName == obj.AccountName && this.AccountKey == obj.AccountKey && this.ContainerName == obj.ContainerName && this.LocalPath == obj.LocalPath && this.AllowUploads == obj.AllowUploads && this.CheckForNewFilesOnly == obj.CheckForNewFilesOnly;
+      return obj != null && this.Id == obj.Id && this.AccountName == obj.AccountName && this.AccountKey == obj.AccountKey && this.ContainerName == obj.ContainerName && this.LocalPath == obj.LocalPath && this.AllowUploads == obj.AllowUploads && this.CheckForNewFilesOnly == obj.CheckForNewFilesOnly && this.Enabled == obj.Enabled && this.Interval == obj.Interval;
     }
 
     #endregion
@@ -56,5 +64,25 @@ namespace Cyotek.AzureContainerEcho
     }
 
     #endregion
+
+    public bool DoesContainerExist()
+    {
+      StorageCredentials credentials;
+      CloudStorageAccount account;
+      CloudBlobClient client;
+      CloudBlobContainer container;
+      bool result;
+
+      credentials = new StorageCredentials(this.AccountName, this.AccountKey);
+      account = new CloudStorageAccount(credentials, true);
+      client = account.CreateCloudBlobClient();
+      client.GetServiceProperties(); // this bit validates that the connection settings are valid
+
+      container = client.GetContainerReference(this.ContainerName);
+
+      result = container.Exists();
+
+      return result;
+    }
   }
 }

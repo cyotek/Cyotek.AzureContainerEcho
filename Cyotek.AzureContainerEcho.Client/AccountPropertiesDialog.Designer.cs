@@ -31,8 +31,6 @@
       this.cancelButton = new System.Windows.Forms.Button();
       this.okButton = new System.Windows.Forms.Button();
       this.settingsGroupBox = new Cyotek.Windows.Forms.GroupBox();
-      this.allowUploadsCheckBox = new System.Windows.Forms.CheckBox();
-      this.line1 = new Cyotek.Windows.Forms.Line();
       this.localPathExploreButton = new System.Windows.Forms.Button();
       this.localPathBrowseButton = new System.Windows.Forms.Button();
       this.containerBrowseButton = new System.Windows.Forms.Button();
@@ -44,25 +42,31 @@
       this.accessKeyLabel = new System.Windows.Forms.Label();
       this.accountNameTextBox = new System.Windows.Forms.TextBox();
       this.accountNameLabel = new System.Windows.Forms.Label();
+      this.newFilesOnlyCheckBox = new System.Windows.Forms.CheckBox();
+      this.allowUploadsCheckBox = new System.Windows.Forms.CheckBox();
       this.label1 = new System.Windows.Forms.Label();
       this.minutesNumericUpDown = new System.Windows.Forms.NumericUpDown();
       this.groupBox1 = new Cyotek.Windows.Forms.GroupBox();
+      this.enabledCheckBox = new System.Windows.Forms.CheckBox();
       this.label2 = new System.Windows.Forms.Label();
       this.testConnectionLinkLabel = new System.Windows.Forms.LinkLabel();
-      this.newFilesOnlyCheckBox = new System.Windows.Forms.CheckBox();
+      this.downloadsGroupBox = new Cyotek.Windows.Forms.GroupBox();
+      this.uploadsGroupBox = new Cyotek.Windows.Forms.GroupBox();
       this.settingsGroupBox.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.minutesNumericUpDown)).BeginInit();
       this.groupBox1.SuspendLayout();
+      this.downloadsGroupBox.SuspendLayout();
+      this.uploadsGroupBox.SuspendLayout();
       this.SuspendLayout();
       // 
       // cancelButton
       // 
       this.cancelButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
       this.cancelButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-      this.cancelButton.Location = new System.Drawing.Point(469, 313);
+      this.cancelButton.Location = new System.Drawing.Point(469, 380);
       this.cancelButton.Name = "cancelButton";
       this.cancelButton.Size = new System.Drawing.Size(75, 23);
-      this.cancelButton.TabIndex = 4;
+      this.cancelButton.TabIndex = 6;
       this.cancelButton.Text = "Cancel";
       this.cancelButton.UseVisualStyleBackColor = true;
       this.cancelButton.Click += new System.EventHandler(this.cancelButton_Click);
@@ -70,22 +74,18 @@
       // okButton
       // 
       this.okButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-      this.okButton.Location = new System.Drawing.Point(388, 313);
+      this.okButton.Location = new System.Drawing.Point(388, 380);
       this.okButton.Name = "okButton";
       this.okButton.Size = new System.Drawing.Size(75, 23);
-      this.okButton.TabIndex = 3;
+      this.okButton.TabIndex = 5;
       this.okButton.Text = "OK";
       this.okButton.UseVisualStyleBackColor = true;
       this.okButton.Click += new System.EventHandler(this.okButton_Click);
       // 
       // settingsGroupBox
       // 
-      this.settingsGroupBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+      this.settingsGroupBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-      this.settingsGroupBox.Controls.Add(this.newFilesOnlyCheckBox);
-      this.settingsGroupBox.Controls.Add(this.allowUploadsCheckBox);
-      this.settingsGroupBox.Controls.Add(this.line1);
       this.settingsGroupBox.Controls.Add(this.localPathExploreButton);
       this.settingsGroupBox.Controls.Add(this.localPathBrowseButton);
       this.settingsGroupBox.Controls.Add(this.containerBrowseButton);
@@ -99,28 +99,10 @@
       this.settingsGroupBox.Controls.Add(this.accountNameLabel);
       this.settingsGroupBox.Location = new System.Drawing.Point(12, 12);
       this.settingsGroupBox.Name = "settingsGroupBox";
-      this.settingsGroupBox.Size = new System.Drawing.Size(532, 230);
+      this.settingsGroupBox.Size = new System.Drawing.Size(532, 147);
       this.settingsGroupBox.TabIndex = 0;
       this.settingsGroupBox.TabStop = false;
       this.settingsGroupBox.Text = "Account Settings";
-      // 
-      // allowUploadsCheckBox
-      // 
-      this.allowUploadsCheckBox.AutoSize = true;
-      this.allowUploadsCheckBox.Location = new System.Drawing.Point(6, 165);
-      this.allowUploadsCheckBox.Name = "allowUploadsCheckBox";
-      this.allowUploadsCheckBox.Size = new System.Drawing.Size(179, 19);
-      this.allowUploadsCheckBox.TabIndex = 12;
-      this.allowUploadsCheckBox.Text = "Allow &uploading of local files";
-      this.allowUploadsCheckBox.UseVisualStyleBackColor = true;
-      // 
-      // line1
-      // 
-      this.line1.Location = new System.Drawing.Point(9, 149);
-      this.line1.Name = "line1";
-      this.line1.Size = new System.Drawing.Size(517, 10);
-      this.line1.TabIndex = 11;
-      this.line1.Text = "line1";
       // 
       // localPathExploreButton
       // 
@@ -227,18 +209,38 @@
       this.accountNameLabel.TabIndex = 0;
       this.accountNameLabel.Text = "Account &name:";
       // 
+      // newFilesOnlyCheckBox
+      // 
+      this.newFilesOnlyCheckBox.AutoSize = true;
+      this.newFilesOnlyCheckBox.Location = new System.Drawing.Point(6, 22);
+      this.newFilesOnlyCheckBox.Name = "newFilesOnlyCheckBox";
+      this.newFilesOnlyCheckBox.Size = new System.Drawing.Size(210, 19);
+      this.newFilesOnlyCheckBox.TabIndex = 0;
+      this.newFilesOnlyCheckBox.Text = "Check for &new or missing files only";
+      this.newFilesOnlyCheckBox.UseVisualStyleBackColor = true;
+      // 
+      // allowUploadsCheckBox
+      // 
+      this.allowUploadsCheckBox.AutoSize = true;
+      this.allowUploadsCheckBox.Location = new System.Drawing.Point(6, 22);
+      this.allowUploadsCheckBox.Name = "allowUploadsCheckBox";
+      this.allowUploadsCheckBox.Size = new System.Drawing.Size(179, 19);
+      this.allowUploadsCheckBox.TabIndex = 0;
+      this.allowUploadsCheckBox.Text = "Allow &uploading of local files";
+      this.allowUploadsCheckBox.UseVisualStyleBackColor = true;
+      // 
       // label1
       // 
       this.label1.AutoSize = true;
-      this.label1.Location = new System.Drawing.Point(6, 24);
+      this.label1.Location = new System.Drawing.Point(5, 49);
       this.label1.Name = "label1";
       this.label1.Size = new System.Drawing.Size(59, 15);
-      this.label1.TabIndex = 0;
+      this.label1.TabIndex = 1;
       this.label1.Text = "Run &every";
       // 
       // minutesNumericUpDown
       // 
-      this.minutesNumericUpDown.Location = new System.Drawing.Point(71, 22);
+      this.minutesNumericUpDown.Location = new System.Drawing.Point(70, 47);
       this.minutesNumericUpDown.Maximum = new decimal(new int[] {
             1440,
             0,
@@ -251,7 +253,7 @@
             0});
       this.minutesNumericUpDown.Name = "minutesNumericUpDown";
       this.minutesNumericUpDown.Size = new System.Drawing.Size(61, 23);
-      this.minutesNumericUpDown.TabIndex = 1;
+      this.minutesNumericUpDown.TabIndex = 2;
       this.minutesNumericUpDown.Value = new decimal(new int[] {
             5,
             0,
@@ -262,46 +264,72 @@
       // 
       this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+      this.groupBox1.Controls.Add(this.enabledCheckBox);
       this.groupBox1.Controls.Add(this.label2);
       this.groupBox1.Controls.Add(this.minutesNumericUpDown);
       this.groupBox1.Controls.Add(this.label1);
-      this.groupBox1.Location = new System.Drawing.Point(12, 248);
+      this.groupBox1.Location = new System.Drawing.Point(12, 292);
       this.groupBox1.Name = "groupBox1";
-      this.groupBox1.Size = new System.Drawing.Size(532, 59);
-      this.groupBox1.TabIndex = 1;
+      this.groupBox1.Size = new System.Drawing.Size(532, 82);
+      this.groupBox1.TabIndex = 3;
       this.groupBox1.TabStop = false;
       this.groupBox1.Text = "Scheduling";
+      // 
+      // enabledCheckBox
+      // 
+      this.enabledCheckBox.AutoSize = true;
+      this.enabledCheckBox.Location = new System.Drawing.Point(6, 22);
+      this.enabledCheckBox.Name = "enabledCheckBox";
+      this.enabledCheckBox.Size = new System.Drawing.Size(103, 19);
+      this.enabledCheckBox.TabIndex = 0;
+      this.enabledCheckBox.Text = "&Enable this job";
+      this.enabledCheckBox.UseVisualStyleBackColor = true;
       // 
       // label2
       // 
       this.label2.AutoSize = true;
-      this.label2.Location = new System.Drawing.Point(138, 24);
+      this.label2.Location = new System.Drawing.Point(137, 49);
       this.label2.Name = "label2";
       this.label2.Size = new System.Drawing.Size(50, 15);
-      this.label2.TabIndex = 2;
+      this.label2.TabIndex = 3;
       this.label2.Text = "minutes";
       // 
       // testConnectionLinkLabel
       // 
       this.testConnectionLinkLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
       this.testConnectionLinkLabel.AutoSize = true;
-      this.testConnectionLinkLabel.Location = new System.Drawing.Point(12, 317);
+      this.testConnectionLinkLabel.Location = new System.Drawing.Point(12, 384);
       this.testConnectionLinkLabel.Name = "testConnectionLinkLabel";
       this.testConnectionLinkLabel.Size = new System.Drawing.Size(94, 15);
-      this.testConnectionLinkLabel.TabIndex = 2;
+      this.testConnectionLinkLabel.TabIndex = 4;
       this.testConnectionLinkLabel.TabStop = true;
       this.testConnectionLinkLabel.Text = "Test Connection";
       this.testConnectionLinkLabel.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.testConnectionLinkLabel_LinkClicked);
       // 
-      // newFilesOnlyCheckBox
+      // downloadsGroupBox
       // 
-      this.newFilesOnlyCheckBox.AutoSize = true;
-      this.newFilesOnlyCheckBox.Location = new System.Drawing.Point(6, 190);
-      this.newFilesOnlyCheckBox.Name = "newFilesOnlyCheckBox";
-      this.newFilesOnlyCheckBox.Size = new System.Drawing.Size(210, 19);
-      this.newFilesOnlyCheckBox.TabIndex = 13;
-      this.newFilesOnlyCheckBox.Text = "Check for &new or missing files only";
-      this.newFilesOnlyCheckBox.UseVisualStyleBackColor = true;
+      this.downloadsGroupBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.downloadsGroupBox.Controls.Add(this.newFilesOnlyCheckBox);
+      this.downloadsGroupBox.Location = new System.Drawing.Point(12, 165);
+      this.downloadsGroupBox.Name = "downloadsGroupBox";
+      this.downloadsGroupBox.Size = new System.Drawing.Size(532, 56);
+      this.downloadsGroupBox.TabIndex = 1;
+      this.downloadsGroupBox.TabStop = false;
+      this.downloadsGroupBox.Text = "Downloads";
+      // 
+      // uploadsGroupBox
+      // 
+      this.uploadsGroupBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.uploadsGroupBox.Controls.Add(this.allowUploadsCheckBox);
+      this.uploadsGroupBox.Location = new System.Drawing.Point(12, 227);
+      this.uploadsGroupBox.Name = "uploadsGroupBox";
+      this.uploadsGroupBox.Size = new System.Drawing.Size(532, 59);
+      this.uploadsGroupBox.TabIndex = 2;
+      this.uploadsGroupBox.TabStop = false;
+      this.uploadsGroupBox.Text = "Uploads";
       // 
       // AccountPropertiesDialog
       // 
@@ -309,7 +337,9 @@
       this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.CancelButton = this.cancelButton;
-      this.ClientSize = new System.Drawing.Size(556, 348);
+      this.ClientSize = new System.Drawing.Size(556, 415);
+      this.Controls.Add(this.uploadsGroupBox);
+      this.Controls.Add(this.downloadsGroupBox);
       this.Controls.Add(this.testConnectionLinkLabel);
       this.Controls.Add(this.groupBox1);
       this.Controls.Add(this.settingsGroupBox);
@@ -326,6 +356,10 @@
       ((System.ComponentModel.ISupportInitialize)(this.minutesNumericUpDown)).EndInit();
       this.groupBox1.ResumeLayout(false);
       this.groupBox1.PerformLayout();
+      this.downloadsGroupBox.ResumeLayout(false);
+      this.downloadsGroupBox.PerformLayout();
+      this.uploadsGroupBox.ResumeLayout(false);
+      this.uploadsGroupBox.PerformLayout();
       this.ResumeLayout(false);
       this.PerformLayout();
 
@@ -353,7 +387,9 @@
     private System.Windows.Forms.LinkLabel testConnectionLinkLabel;
     private System.Windows.Forms.Button localPathExploreButton;
     private System.Windows.Forms.CheckBox allowUploadsCheckBox;
-    private Windows.Forms.Line line1;
     private System.Windows.Forms.CheckBox newFilesOnlyCheckBox;
+    private Windows.Forms.GroupBox downloadsGroupBox;
+    private Windows.Forms.GroupBox uploadsGroupBox;
+    private System.Windows.Forms.CheckBox enabledCheckBox;
   }
 }

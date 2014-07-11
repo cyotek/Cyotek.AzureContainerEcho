@@ -173,7 +173,9 @@ namespace Cyotek.AzureContainerEcho
 
             _jobData.Clear();
             foreach (EchoScheduledTaskOptions job in jobs)
+            {
               this.Schedule(job);
+            }
           }
         }
       }
