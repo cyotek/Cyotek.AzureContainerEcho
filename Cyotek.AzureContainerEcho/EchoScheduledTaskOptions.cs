@@ -8,7 +8,7 @@ namespace Cyotek.AzureContainerEcho
   [Serializable]
   public class EchoScheduledTaskOptions : ICloneable, IEquatable<EchoScheduledTaskOptions>
   {
-    #region Constructors
+    #region Public Constructors
 
     public EchoScheduledTaskOptions()
     {
@@ -18,7 +18,7 @@ namespace Cyotek.AzureContainerEcho
 
     #endregion
 
-    #region Properties
+    #region Public Properties
 
     public string AccountKey { get; set; }
 
@@ -26,44 +26,30 @@ namespace Cyotek.AzureContainerEcho
 
     public bool AllowUploads { get; set; }
 
+    public bool CheckForNewFilesOnly { get; set; }
+
     public string ContainerName { get; set; }
+
+    public bool DeleteAfterDownload { get; set; }
+
+    public bool Enabled { get; set; }
 
     public Guid Id { get; set; }
 
     public TimeSpan Interval { get; set; }
 
-    public string LocalPath { get; set; }
-
-    public bool CheckForNewFilesOnly { get; set; }
-
     public DateTime? LastRun { get; set; }
 
-    public bool Enabled { get; set; }
+    public string LocalPath { get; set; }
 
     #endregion
 
-    #region Members
+    #region Public Members
 
     public EchoScheduledTaskOptions Clone()
     {
       return (EchoScheduledTaskOptions)this.MemberwiseClone();
     }
-
-    public bool Equals(EchoScheduledTaskOptions obj)
-    {
-      return obj != null && this.Id == obj.Id && this.AccountName == obj.AccountName && this.AccountKey == obj.AccountKey && this.ContainerName == obj.ContainerName && this.LocalPath == obj.LocalPath && this.AllowUploads == obj.AllowUploads && this.CheckForNewFilesOnly == obj.CheckForNewFilesOnly && this.Enabled == obj.Enabled && this.Interval == obj.Interval;
-    }
-
-    #endregion
-
-    #region ICloneable Members
-
-    object ICloneable.Clone()
-    {
-      return this.Clone();
-    }
-
-    #endregion
 
     public bool DoesContainerExist()
     {
@@ -84,5 +70,21 @@ namespace Cyotek.AzureContainerEcho
 
       return result;
     }
+
+    public bool Equals(EchoScheduledTaskOptions obj)
+    {
+      return obj != null && this.Id == obj.Id && this.AccountName == obj.AccountName && this.AccountKey == obj.AccountKey && this.ContainerName == obj.ContainerName && this.LocalPath == obj.LocalPath && this.AllowUploads == obj.AllowUploads && this.CheckForNewFilesOnly == obj.CheckForNewFilesOnly && this.Enabled == obj.Enabled && this.Interval == obj.Interval && this.DeleteAfterDownload == obj.DeleteAfterDownload;
+    }
+
+    #endregion
+
+    #region ICloneable Members
+
+    object ICloneable.Clone()
+    {
+      return this.Clone();
+    }
+
+    #endregion
   }
 }

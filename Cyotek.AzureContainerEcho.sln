@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
+VisualStudioVersion = 12.0.30501.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cyotek.AzureContainerEcho.Client", "Cyotek.AzureContainerEcho.Client\Cyotek.AzureContainerEcho.Client.csproj", "{191C65AC-3268-42C6-B687-9F0A764FFEF5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cyotek.AzureContainerEcho", "Cyotek.AzureContainerEcho\Cyotek.AzureContainerEcho.csproj", "{4241C857-21DE-4CE4-A527-2898CC448866}"
@@ -8,8 +10,10 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Files", "Solution Files", "{33FD6803-0476-4EDD-88B5-42C90F33BCA7}"
 	ProjectSection(SolutionItems) = preProject
 		changelog.md = changelog.md
+		jobprops.png = jobprops.png
 		license.txt = license.txt
 		readme.md = readme.md
+		settings.png = settings.png
 	EndProjectSection
 EndProject
 Global

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -31,6 +32,8 @@ namespace Cyotek.AzureContainerEcho.Client
       this.ContextMenu.Items.Add("&Settings...", Resources.Settings, this.SettingsContextMenuClickHandler).Font = new Font(this.ContextMenu.Font, FontStyle.Bold);
       this.ContextMenu.Items.Add("-");
       this.ContextMenu.Items.Add("&Run Now", Resources.Run, this.RunNowContextMenuClickHandler);
+      this.ContextMenu.Items.Add("-");
+      this.ContextMenu.Items.Add("Open &Log", null, this.LogContextMenuClickHandler);
       this.ContextMenu.Items.Add("-");
       this.ContextMenu.Items.Add("&About", null, this.AboutContextMenuClickHandler);
       this.ContextMenu.Items.Add("-");
@@ -89,6 +92,18 @@ namespace Cyotek.AzureContainerEcho.Client
     private void ExitContextMenuClickHandler(object sender, EventArgs eventArgs)
     {
       this.ExitThread();
+    }
+
+    private void LogContextMenuClickHandler(object sender, EventArgs e)
+    {
+      try
+      {
+        Process.Start(_logFileName);
+      }
+      catch (Exception ex)
+      {
+        MessageBox.Show(ex.GetBaseException().Message, Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
+      }
     }
 
     private void RunNowContextMenuClickHandler(object sender, EventArgs e)

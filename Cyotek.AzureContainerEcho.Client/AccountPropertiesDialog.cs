@@ -26,6 +26,7 @@ namespace Cyotek.AzureContainerEcho.Client
       allowUploadsCheckBox.Checked = options.AllowUploads;
       newFilesOnlyCheckBox.Checked = options.CheckForNewFilesOnly;
       enabledCheckBox.Checked = options.Enabled;
+      deleteAfterDownloadCheckBox.Checked = options.DeleteAfterDownload;
     }
 
     #endregion
@@ -160,6 +161,7 @@ namespace Cyotek.AzureContainerEcho.Client
         this.Options.AllowUploads = allowUploadsCheckBox.Checked;
         this.Options.CheckForNewFilesOnly = newFilesOnlyCheckBox.Checked;
         this.Options.Enabled = enabledCheckBox.Checked;
+        this.Options.DeleteAfterDownload = deleteAfterDownloadCheckBox.Checked;
 
         this.DialogResult = DialogResult.OK;
         this.Close();
@@ -179,15 +181,15 @@ namespace Cyotek.AzureContainerEcho.Client
           Application.DoEvents(); // HACK: Evil but thats what I get for being lazy
 
           containerExists = new EchoScheduledTaskOptions
-          {
-            AccountName = accountNameTextBox.Text,
-            AccountKey = accessKeyTextBox.Text,
-            ContainerName = containerTextBox.Text
-          }.DoesContainerExist();
+                            {
+                              AccountName = accountNameTextBox.Text,
+                              AccountKey = accessKeyTextBox.Text,
+                              ContainerName = containerTextBox.Text
+                            }.DoesContainerExist();
 
           suffix = containerExists ? "." : ", however the specified container does not exist.";
 
-          MessageBox.Show(string.Concat("Connection successfull", suffix), "Test Connection", MessageBoxButtons.OK, MessageBoxIcon.Information);
+          MessageBox.Show(string.Concat("Connection successful", suffix), "Test Connection", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
         catch (Exception ex)
         {

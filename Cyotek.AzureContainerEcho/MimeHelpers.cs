@@ -25,7 +25,7 @@ namespace Cyotek.AzureContainerEcho
 
     #endregion
 
-    #region Class Members
+    #region Public Class Members
 
     public static string GetDefaultExtension(string mimeType)
     {
@@ -78,7 +78,9 @@ namespace Cyotek.AzureContainerEcho
         lock (_lock)
         {
           if (!_mimeTypeExtensionCache.ContainsKey(mimeType))
+          {
             _mimeTypeExtensionCache.Add(mimeType, result);
+          }
         }
       }
 
@@ -90,18 +92,22 @@ namespace Cyotek.AzureContainerEcho
       string result;
 
       if (contentType == null)
+      {
         contentType = string.Empty;
+      }
 
       if (contentType.Contains(";"))
       {
         // TODO: Assume first or check all?
         result = contentType.Split(new[]
-        {
-          ";"
-        }, StringSplitOptions.RemoveEmptyEntries)[0];
+                                   {
+                                     ";"
+                                   }, StringSplitOptions.RemoveEmptyEntries)[0];
       }
       else
+      {
         result = contentType;
+      }
 
       return result.ToLowerInvariant().Trim();
     }
@@ -113,7 +119,9 @@ namespace Cyotek.AzureContainerEcho
       object value;
 
       if (!extension.StartsWith("."))
+      {
         extension = "." + extension;
+      }
 
       key = Registry.ClassesRoot.OpenSubKey(extension, false);
       value = key != null ? key.GetValue("Content Type", null) : null;
@@ -138,7 +146,9 @@ namespace Cyotek.AzureContainerEcho
         result = value != null ? value.ToString() : null;
       }
       else
+      {
         result = null;
+      }
 
       return result;
     }

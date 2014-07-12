@@ -13,7 +13,7 @@ namespace Cyotek.AzureContainerEcho
 {
   public class EchoScheduledTask : ScheduledTask
   {
-    #region Constructors
+    #region Public Constructors
 
     public EchoScheduledTask()
     {
@@ -31,7 +31,7 @@ namespace Cyotek.AzureContainerEcho
 
     #endregion
 
-    #region Overridden Members
+    #region Overridden Methods
 
     protected override void ExecuteJob()
     {
@@ -75,7 +75,9 @@ namespace Cyotek.AzureContainerEcho
         // download
         pendingRemote = this.GetMissingOrChangedRemoteBlobs(remoteItems, options.LocalPath, options.CheckForNewFilesOnly, options.LastRun);
         if (pendingRemote.Any() && !this.IsCancelPending)
+        {
           this.DownloadPendingBlobs(pendingRemote, options);
+        }
 
         //  upload
         if (options.AllowUploads && !this.IsCancelPending)
@@ -84,7 +86,9 @@ namespace Cyotek.AzureContainerEcho
 
           pendingLocal = this.GetMissingOrChangedLocalBlobs(remoteItems, options.LocalPath);
           if (pendingLocal.Any() && !this.IsCancelPending)
+          {
             this.UploadPendingBlobs(pendingLocal, container);
+          }
         }
 
         // mark the timestamp, so we can use this in future if required
@@ -96,7 +100,7 @@ namespace Cyotek.AzureContainerEcho
 
     #endregion
 
-    #region Members
+    #region Private Members
 
     private void DownloadPendingBlobs(IEnumerable<ICloudBlob> pendingBlobs, EchoScheduledTaskOptions options)
     {
@@ -109,13 +113,30 @@ namespace Cyotek.AzureContainerEcho
         localFileName = Path.Combine(options.LocalPath, fileBlob.Name);
 
         using (FileStream stream = File.OpenWrite(localFileName))
+        {
           fileBlob.DownloadToStream(stream);
+        }
+
+        if (this.GetMd5HashFromFile(localFileName) != this.GetBlobHash(fileBlob))
+        {
+          throw new InvalidDataException(string.Format("Hash of local file '{0}' does not match remote hash.", localFileName));
+        }
 
         if (fileBlob.Properties.LastModified.HasValue)
+        {
           File.SetLastWriteTime(localFileName, fileBlob.Properties.LastModified.Value.UtcDateTime);
+        }
+
+        if (options.DeleteAfterDownload)
+        {
+          Debug.Print("Deleting '{0}'", fileBlob.Name);
+          fileBlob.Delete();
+        }
 
         if (this.IsCancelPending)
+        {
           break;
+        }
       }
     }
 
@@ -151,14 +172,18 @@ namespace Cyotek.AzureContainerEcho
         remoteItems.TryGetValue(Path.GetFileName(fileName), out fileBlob);
 
         if (fileBlob != null && string.IsNullOrEmpty(fileBlob.Properties.ContentMD5))
+        {
           fileBlob.FetchAttributes();
+        }
 
         if (fileBlob == null || string.IsNullOrEmpty(fileBlob.Properties.ContentMD5) || this.GetMd5HashFromFile(fileName) != this.GetBlobHash(fileBlob))
         {
           results.Add(fileName);
 
           if (this.IsCancelPending)
+          {
             break;
+          }
         }
       }
 
@@ -216,7 +241,9 @@ namespace Cyotek.AzureContainerEcho
         }
 
         if (this.IsCancelPending)
+        {
           break;
+        }
       }
 
       Debug.Print("Found {0} missing or changed remote blobs.", results.Count);
@@ -239,7 +266,9 @@ namespace Cyotek.AzureContainerEcho
 
         // upload the core data
         using (FileStream stream = File.OpenRead(fileInfo.FullName))
+        {
           fileBlob.UploadFromStream(stream);
+        }
 
         // update the mimetype, if one was available, otherwise just leave it as is
         mimeType = MimeHelpers.GetMimeTypeFromExtension(fileInfo.Extension);
@@ -252,7 +281,9 @@ namespace Cyotek.AzureContainerEcho
 
         // check to see if something has requested the task be cancelled and break out if so
         if (this.IsCancelPending)
+        {
           break;
+        }
       }
     }
 

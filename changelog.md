@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.0.3.0
+* Added an **Open Log** option to the tray icon context menu
+* After downloading, the hash of the remote blob and local file are compared and the job will now fail if they don't match
+* Added a new **Delete remote file after downloading** option to allow remote blobs to be deleted after copying locally
+* Fixed typo in the spelling of the successful 
+
 ## 1.0.2.0
 * Added a new Enabled property to jobs to allow them to be temporarily disabled without removing them
 * When the **Check for new or missing files only** option is set, only remote blobs modified since the last time the job was executed will be downloaded

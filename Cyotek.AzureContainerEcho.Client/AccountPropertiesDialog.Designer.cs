@@ -52,6 +52,7 @@
       this.testConnectionLinkLabel = new System.Windows.Forms.LinkLabel();
       this.downloadsGroupBox = new Cyotek.Windows.Forms.GroupBox();
       this.uploadsGroupBox = new Cyotek.Windows.Forms.GroupBox();
+      this.deleteAfterDownloadCheckBox = new System.Windows.Forms.CheckBox();
       this.settingsGroupBox.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.minutesNumericUpDown)).BeginInit();
       this.groupBox1.SuspendLayout();
@@ -63,7 +64,7 @@
       // 
       this.cancelButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
       this.cancelButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-      this.cancelButton.Location = new System.Drawing.Point(469, 380);
+      this.cancelButton.Location = new System.Drawing.Point(469, 405);
       this.cancelButton.Name = "cancelButton";
       this.cancelButton.Size = new System.Drawing.Size(75, 23);
       this.cancelButton.TabIndex = 6;
@@ -74,7 +75,7 @@
       // okButton
       // 
       this.okButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-      this.okButton.Location = new System.Drawing.Point(388, 380);
+      this.okButton.Location = new System.Drawing.Point(388, 405);
       this.okButton.Name = "okButton";
       this.okButton.Size = new System.Drawing.Size(75, 23);
       this.okButton.TabIndex = 5;
@@ -268,7 +269,7 @@
       this.groupBox1.Controls.Add(this.label2);
       this.groupBox1.Controls.Add(this.minutesNumericUpDown);
       this.groupBox1.Controls.Add(this.label1);
-      this.groupBox1.Location = new System.Drawing.Point(12, 292);
+      this.groupBox1.Location = new System.Drawing.Point(12, 317);
       this.groupBox1.Name = "groupBox1";
       this.groupBox1.Size = new System.Drawing.Size(532, 82);
       this.groupBox1.TabIndex = 3;
@@ -298,7 +299,7 @@
       // 
       this.testConnectionLinkLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
       this.testConnectionLinkLabel.AutoSize = true;
-      this.testConnectionLinkLabel.Location = new System.Drawing.Point(12, 384);
+      this.testConnectionLinkLabel.Location = new System.Drawing.Point(12, 409);
       this.testConnectionLinkLabel.Name = "testConnectionLinkLabel";
       this.testConnectionLinkLabel.Size = new System.Drawing.Size(94, 15);
       this.testConnectionLinkLabel.TabIndex = 4;
@@ -311,10 +312,11 @@
       this.downloadsGroupBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+      this.downloadsGroupBox.Controls.Add(this.deleteAfterDownloadCheckBox);
       this.downloadsGroupBox.Controls.Add(this.newFilesOnlyCheckBox);
       this.downloadsGroupBox.Location = new System.Drawing.Point(12, 165);
       this.downloadsGroupBox.Name = "downloadsGroupBox";
-      this.downloadsGroupBox.Size = new System.Drawing.Size(532, 56);
+      this.downloadsGroupBox.Size = new System.Drawing.Size(532, 81);
       this.downloadsGroupBox.TabIndex = 1;
       this.downloadsGroupBox.TabStop = false;
       this.downloadsGroupBox.Text = "Downloads";
@@ -324,12 +326,22 @@
       this.uploadsGroupBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
       this.uploadsGroupBox.Controls.Add(this.allowUploadsCheckBox);
-      this.uploadsGroupBox.Location = new System.Drawing.Point(12, 227);
+      this.uploadsGroupBox.Location = new System.Drawing.Point(12, 252);
       this.uploadsGroupBox.Name = "uploadsGroupBox";
       this.uploadsGroupBox.Size = new System.Drawing.Size(532, 59);
       this.uploadsGroupBox.TabIndex = 2;
       this.uploadsGroupBox.TabStop = false;
       this.uploadsGroupBox.Text = "Uploads";
+      // 
+      // deleteAfterDownloadCheckBox
+      // 
+      this.deleteAfterDownloadCheckBox.AutoSize = true;
+      this.deleteAfterDownloadCheckBox.Location = new System.Drawing.Point(6, 47);
+      this.deleteAfterDownloadCheckBox.Name = "deleteAfterDownloadCheckBox";
+      this.deleteAfterDownloadCheckBox.Size = new System.Drawing.Size(219, 19);
+      this.deleteAfterDownloadCheckBox.TabIndex = 1;
+      this.deleteAfterDownloadCheckBox.Text = "&Delete remote file after downloading";
+      this.deleteAfterDownloadCheckBox.UseVisualStyleBackColor = true;
       // 
       // AccountPropertiesDialog
       // 
@@ -337,7 +349,7 @@
       this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.CancelButton = this.cancelButton;
-      this.ClientSize = new System.Drawing.Size(556, 415);
+      this.ClientSize = new System.Drawing.Size(556, 440);
       this.Controls.Add(this.uploadsGroupBox);
       this.Controls.Add(this.downloadsGroupBox);
       this.Controls.Add(this.testConnectionLinkLabel);
@@ -391,5 +403,6 @@
     private Windows.Forms.GroupBox downloadsGroupBox;
     private Windows.Forms.GroupBox uploadsGroupBox;
     private System.Windows.Forms.CheckBox enabledCheckBox;
+    private System.Windows.Forms.CheckBox deleteAfterDownloadCheckBox;
   }
 }

@@ -22,10 +22,7 @@ namespace Cyotek.AzureContainerEcho
 
     #endregion
 
-    #region Constructors
-
-    public ITaskScheduler Scheduler
-    { get { return _scheduler; } }
+    #region Public Constructors
 
     public JobManager()
     {
@@ -72,7 +69,7 @@ namespace Cyotek.AzureContainerEcho
 
     #endregion
 
-    #region Properties
+    #region Public Properties
 
     [Category("")]
     [DefaultValue("")]
@@ -97,6 +94,11 @@ namespace Cyotek.AzureContainerEcho
     [Browsable(false)]
     public bool IsDisposed { get; private set; }
 
+    public ITaskScheduler Scheduler
+    {
+      get { return _scheduler; }
+    }
+
     public string StorageFileName
     {
       get { return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "cyotek.AzureContainerEcho.jobs.json"); }
@@ -104,7 +106,7 @@ namespace Cyotek.AzureContainerEcho
 
     #endregion
 
-    #region Members
+    #region Public Members
 
     /// <summary>
     /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
@@ -145,7 +147,9 @@ namespace Cyotek.AzureContainerEcho
       if (job != null)
       {
         if (job.InProgress)
+        {
           job.Cancel();
+        }
         this.Scheduler.Remove(job);
         _jobData.Remove((EchoScheduledTaskOptions)job.Data["options"]);
       }
@@ -187,15 +191,17 @@ namespace Cyotek.AzureContainerEcho
       JsonSerializerSettings serializerSettings;
 
       serializerSettings = new JsonSerializerSettings
-      {
-        Formatting = Formatting.Indented
-      };
+                           {
+                             Formatting = Formatting.Indented
+                           };
       serializer = JsonSerializer.Create(serializerSettings);
 
       using (Stream file = File.Create(this.StorageFileName))
       {
         using (TextWriter writer = new StreamWriter(file))
+        {
           serializer.Serialize(writer, _jobData);
+        }
       }
     }
 
@@ -204,16 +210,20 @@ namespace Cyotek.AzureContainerEcho
       IScheduledTask job;
 
       job = new EchoScheduledTask
-      {
-        Name = options.ContainerName,
-        RepeatingInterval = options.Interval
-      };
+            {
+              Name = options.ContainerName,
+              RepeatingInterval = options.Interval
+            };
       job.Data["Options"] = options;
 
       this.Scheduler.Add(job);
 
       _jobData.Add(options);
     }
+
+    #endregion
+
+    #region Protected Members
 
     /// <summary>
     /// Releases unmanaged and - optionally - managed resources.
@@ -224,7 +234,9 @@ namespace Cyotek.AzureContainerEcho
       if (!this.IsDisposed)
       {
         if (disposing)
+        {
           this.Scheduler.Stop();
+        }
 
         this.IsDisposed = true;
       }
@@ -239,14 +251,20 @@ namespace Cyotek.AzureContainerEcho
       EventHandler handler;
 
       if (this.Enabled)
+      {
         this.Scheduler.Start();
+      }
       else
+      {
         this.Scheduler.Stop();
+      }
 
       handler = this.EnabledChanged;
 
       if (handler != null)
+      {
         handler(this, e);
+      }
     }
 
     /// <summary>
@@ -260,7 +278,9 @@ namespace Cyotek.AzureContainerEcho
       handler = this.TaskCancelled;
 
       if (handler != null)
+      {
         handler(this, e);
+      }
     }
 
     /// <summary>
@@ -274,7 +294,9 @@ namespace Cyotek.AzureContainerEcho
       handler = this.TaskCompleted;
 
       if (handler != null)
+      {
         handler(this, e);
+      }
     }
 
     /// <summary>
@@ -288,7 +310,9 @@ namespace Cyotek.AzureContainerEcho
       handler = this.TaskException;
 
       if (handler != null)
+      {
         handler(this, e);
+      }
     }
 
     /// <summary>
@@ -302,8 +326,14 @@ namespace Cyotek.AzureContainerEcho
       handler = this.TaskStarted;
 
       if (handler != null)
+      {
         handler(this, e);
+      }
     }
+
+    #endregion
+
+    #region Private Members
 
     private void Log(string text)
     {
