@@ -9,6 +9,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 
@@ -166,6 +167,7 @@ namespace Cyotek.AzureContainerEcho.Client
       item.SubItems[0].Text = job.AccountName;
       item.SubItems[1].Text = job.ContainerName;
       item.SubItems[2].Text = job.LocalPath;
+      item.ForeColor = job.Enabled ? SystemColors.WindowText : SystemColors.GrayText;
     }
 
     private void ShowJobSettings(EchoScheduledTaskOptions options)

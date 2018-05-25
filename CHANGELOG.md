@@ -1,5 +1,10 @@
 # Change Log
 
+## 1.4.0
+### Changed
+* Switched to semantic versioning
+* Job list now colour codes items
+
 ## 1.0.3.0
 * Added an **Open Log** option to the tray icon context menu
 * After downloading, the hash of the remote blob and local file are compared and the job will now fail if they don't match
