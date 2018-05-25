@@ -45,8 +45,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\lib\Cyotek.TaskScheduler.dll</HintPath>
     </Reference>
-    <Reference Include="Cyotek.Windows.Forms.TabList">
-      <HintPath>..\packages\CyotekTabList.1.0.1.0\lib\net35\Cyotek.Windows.Forms.TabList.dll</HintPath>
+    <Reference Include="Cyotek.Windows.Forms.TabList, Version=2.0.0.0, Culture=neutral, PublicKeyToken=58daa28b0b2de221, processorArchitecture=MSIL">
+      <HintPath>..\packages\CyotekTabList.2.0.0\lib\net35\Cyotek.Windows.Forms.TabList.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -152,16 +153,14 @@
     <Content Include="..\resources\icon.ico">
       <Link>icon.ico</Link>
     </Content>
+    <None Include="app.config" />
+    <None Include="packages.config" />
     <None Include="Resources\property.png" />
     <None Include="Resources\Run.png" />
-    <None Include="app.config" />
     <None Include="Resources\folder-open-go.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cyopublic.snk" />
-    <None Include="packages.config">
-      <SubType>Designer</SubType>
-    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
