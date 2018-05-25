@@ -1,9 +1,21 @@
+// Azure Container Echo
+// https://github.com/cyotek/Cyotek.AzureContainerEcho
+// Copyright © 2013-2018 Cyotek Ltd. All Rights Reserved.
+
+// Licensed under the MIT License. See LICENSE.txt for the full text.
+
+// Found this example useful? 
+// https://www.paypal.me/cyotek
+
 using System;
 using System.ComponentModel;
 using System.ComponentModel.Design;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
+
+// Creating a GroupBox containing an image and a custom display rectangle
+// https://www.cyotek.com/blog/creating-a-groupbox-containing-an-image-and-a-custom-display-rectangle
 
 namespace Cyotek.Windows.Forms
 {
