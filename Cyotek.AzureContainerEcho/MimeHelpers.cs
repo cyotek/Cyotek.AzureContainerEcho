@@ -13,6 +13,9 @@ using System.Linq;
 using System.Security;
 using Microsoft.Win32;
 
+// Snippet: Mime types and file extensions
+// https://www.cyotek.com/blog/mime-types-and-file-extensions
+
 namespace Cyotek.AzureContainerEcho
 {
   internal static class MimeHelpers

@@ -3,7 +3,11 @@ bin/
 packages/
 nuget/
 .vs/
+deployment/
 
 *.ncrunchsolution
 *.ncrunchproject
 *.user
+build.bat
+buildcore.bat
+depchk.ini
