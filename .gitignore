@@ -4,6 +4,7 @@ packages/
 nuget/
 .vs/
 deployment/
+Cyotek.AzureContainerEcho.Console/
 
 *.ncrunchsolution
 *.ncrunchproject
