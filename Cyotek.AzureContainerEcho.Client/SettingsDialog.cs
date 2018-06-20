@@ -17,17 +17,17 @@ namespace Cyotek.AzureContainerEcho.Client
 {
   internal partial class SettingsDialog : BaseForm
   {
-    #region Instance Fields
+    #region Constants
 
     private readonly List<EchoScheduledTaskOptions> _jobs;
 
     #endregion
 
-    #region Public Constructors
+    #region Constructors
 
     public SettingsDialog()
     {
-      InitializeComponent();
+      this.InitializeComponent();
 
       _jobs = new List<EchoScheduledTaskOptions>();
     }
@@ -40,7 +40,13 @@ namespace Cyotek.AzureContainerEcho.Client
 
     #endregion
 
-    #region Overridden Methods
+    #region Properties
+
+    public JobManager Manager { get; set; }
+
+    #endregion
+
+    #region Methods
 
     protected override void OnLoad(EventArgs e)
     {
@@ -73,15 +79,10 @@ namespace Cyotek.AzureContainerEcho.Client
       this.Activate();
     }
 
-    #endregion
-
-    #region Public Properties
-
-    public JobManager Manager { get; set; }
-
-    #endregion
-
-    #region Private Members
+    private void addButton_Click(object sender, EventArgs e)
+    {
+      this.ShowJobSettings(new EchoScheduledTaskOptions());
+    }
 
     private void ApplySettings()
     {
@@ -138,6 +139,67 @@ namespace Cyotek.AzureContainerEcho.Client
       this.Manager.Save();
     }
 
+    private void cancelButton_Click(object sender, EventArgs e)
+    {
+      this.DialogResult = DialogResult.Cancel;
+      this.Close();
+    }
+
+    private void containersListView_ItemActivate(object sender, EventArgs e)
+    {
+      editButton.PerformClick();
+    }
+
+    private void containersListView_SelectedIndexChanged(object sender, EventArgs e)
+    {
+      bool enabled;
+
+      enabled = containersListView.SelectedItems.Count != 0;
+      editButton.Enabled = enabled;
+      removeButton.Enabled = enabled;
+      duplicateButton.Enabled = enabled;
+    }
+
+    private void duplicateButton_Click(object sender, EventArgs e)
+    {
+      List<EchoScheduledTaskOptions> jobs;
+
+      jobs = containersListView.SelectedItems.Cast<ListViewItem>().Select(i => _jobs.Find(j => j.Id == new Guid(i.Name))).ToList();
+
+      foreach (EchoScheduledTaskOptions job in jobs)
+      {
+        EchoScheduledTaskOptions clone;
+
+        clone = new EchoScheduledTaskOptions
+                {
+                  Enabled = false,
+                  AccountKey = job.AccountKey,
+                  AccountName = job.AccountName,
+                  AllowUploads = job.AllowUploads,
+                  CheckForNewFilesOnly = job.CheckForNewFilesOnly,
+                  ContainerName = job.ContainerName,
+                  DeleteAfterDownload = job.DeleteAfterDownload,
+                  Interval = job.Interval,
+                  LocalPath = job.LocalPath
+                };
+
+        _jobs.Add(clone);
+
+        this.ListJob(clone);
+      }
+    }
+
+    private void editButton_Click(object sender, EventArgs e)
+    {
+      EchoScheduledTaskOptions options;
+
+      options = _jobs.Find(j => j.Id == new Guid(containersListView.SelectedItems[0].Name));
+      if (options != null)
+      {
+        this.ShowJobSettings(options);
+      }
+    }
+
     private void ListJob(EchoScheduledTaskOptions job)
     {
       ListViewItem item;
@@ -170,64 +232,6 @@ namespace Cyotek.AzureContainerEcho.Client
       item.ForeColor = job.Enabled ? SystemColors.WindowText : SystemColors.GrayText;
     }
 
-    private void ShowJobSettings(EchoScheduledTaskOptions options)
-    {
-      using (Form dialog = new AccountPropertiesDialog(options))
-      {
-        dialog.Text = string.Format("{0} Account", _jobs.Contains(options) ? "Edit" : "Add");
-
-        if (dialog.ShowDialog(this) == DialogResult.OK)
-        {
-          if (!_jobs.Contains(options))
-          {
-            _jobs.Add(options);
-          }
-
-          this.ListJob(options);
-        }
-      }
-    }
-
-    #endregion
-
-    #region Event Handlers
-
-    private void addButton_Click(object sender, EventArgs e)
-    {
-      this.ShowJobSettings(new EchoScheduledTaskOptions());
-    }
-
-    private void cancelButton_Click(object sender, EventArgs e)
-    {
-      this.DialogResult = DialogResult.Cancel;
-      this.Close();
-    }
-
-    private void containersListView_ItemActivate(object sender, EventArgs e)
-    {
-      editButton.PerformClick();
-    }
-
-    private void containersListView_SelectedIndexChanged(object sender, EventArgs e)
-    {
-      bool enabled;
-
-      enabled = containersListView.SelectedItems.Count != 0;
-      editButton.Enabled = enabled;
-      removeButton.Enabled = enabled;
-    }
-
-    private void editButton_Click(object sender, EventArgs e)
-    {
-      EchoScheduledTaskOptions options;
-
-      options = _jobs.Find(j => j.Id == new Guid(containersListView.SelectedItems[0].Name));
-      if (options != null)
-      {
-        this.ShowJobSettings(options);
-      }
-    }
-
     private void okButton_Click(object sender, EventArgs e)
     {
       this.ApplySettings();
@@ -248,6 +252,24 @@ namespace Cyotek.AzureContainerEcho.Client
         {
           _jobs.Remove(job);
           containersListView.Items.RemoveByKey(job.Id.ToString());
+        }
+      }
+    }
+
+    private void ShowJobSettings(EchoScheduledTaskOptions options)
+    {
+      using (Form dialog = new AccountPropertiesDialog(options))
+      {
+        dialog.Text = string.Format("{0} Account", _jobs.Contains(options) ? "Edit" : "Add");
+
+        if (dialog.ShowDialog(this) == DialogResult.OK)
+        {
+          if (!_jobs.Contains(options))
+          {
+            _jobs.Add(options);
+          }
+
+          this.ListJob(options);
         }
       }
     }

@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.4.1
+### Added
+* Added the ability to duplicate jobs
+
 ## 1.4.0
 ### Changed
 * Switched to semantic versioning

@@ -37,6 +37,7 @@ namespace Cyotek.AzureContainerEcho.Client
       this.startWithWindowsCheckBox = new System.Windows.Forms.CheckBox();
       this.containersTabListPage = new Cyotek.Windows.Forms.TabListPage();
       this.containersGroupBox = new Cyotek.Windows.Forms.GroupBox();
+      this.duplicateButton = new System.Windows.Forms.Button();
       this.removeButton = new System.Windows.Forms.Button();
       this.editButton = new System.Windows.Forms.Button();
       this.addButton = new System.Windows.Forms.Button();
@@ -72,10 +73,8 @@ namespace Cyotek.AzureContainerEcho.Client
       // settingsTabListPage
       // 
       this.settingsTabListPage.Controls.Add(this.generalSettingsGroupBox);
-      this.settingsTabListPage.Dock = System.Windows.Forms.DockStyle.Fill;
       this.settingsTabListPage.Name = "settingsTabListPage";
       this.settingsTabListPage.Size = new System.Drawing.Size(513, 441);
-      this.settingsTabListPage.TabIndex = 1;
       this.settingsTabListPage.Text = "Settings";
       // 
       // generalSettingsGroupBox
@@ -103,10 +102,8 @@ namespace Cyotek.AzureContainerEcho.Client
       // containersTabListPage
       // 
       this.containersTabListPage.Controls.Add(this.containersGroupBox);
-      this.containersTabListPage.Dock = System.Windows.Forms.DockStyle.Fill;
       this.containersTabListPage.Name = "containersTabListPage";
       this.containersTabListPage.Size = new System.Drawing.Size(513, 441);
-      this.containersTabListPage.TabIndex = 0;
       this.containersTabListPage.Text = "Accounts";
       // 
       // containersGroupBox
@@ -114,6 +111,7 @@ namespace Cyotek.AzureContainerEcho.Client
       this.containersGroupBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+      this.containersGroupBox.Controls.Add(this.duplicateButton);
       this.containersGroupBox.Controls.Add(this.removeButton);
       this.containersGroupBox.Controls.Add(this.editButton);
       this.containersGroupBox.Controls.Add(this.addButton);
@@ -121,9 +119,21 @@ namespace Cyotek.AzureContainerEcho.Client
       this.containersGroupBox.Location = new System.Drawing.Point(3, 3);
       this.containersGroupBox.Name = "containersGroupBox";
       this.containersGroupBox.Size = new System.Drawing.Size(507, 435);
-      this.containersGroupBox.TabIndex = 1;
+      this.containersGroupBox.TabIndex = 0;
       this.containersGroupBox.TabStop = false;
       this.containersGroupBox.Text = "Accounts";
+      // 
+      // duplicateButton
+      // 
+      this.duplicateButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+      this.duplicateButton.Enabled = false;
+      this.duplicateButton.Location = new System.Drawing.Point(426, 109);
+      this.duplicateButton.Name = "duplicateButton";
+      this.duplicateButton.Size = new System.Drawing.Size(75, 23);
+      this.duplicateButton.TabIndex = 4;
+      this.duplicateButton.Text = "&Duplicate";
+      this.duplicateButton.UseVisualStyleBackColor = true;
+      this.duplicateButton.Click += new System.EventHandler(this.duplicateButton_Click);
       // 
       // removeButton
       // 
@@ -132,7 +142,7 @@ namespace Cyotek.AzureContainerEcho.Client
       this.removeButton.Location = new System.Drawing.Point(426, 80);
       this.removeButton.Name = "removeButton";
       this.removeButton.Size = new System.Drawing.Size(75, 23);
-      this.removeButton.TabIndex = 5;
+      this.removeButton.TabIndex = 3;
       this.removeButton.Text = "&Remove...";
       this.removeButton.UseVisualStyleBackColor = true;
       this.removeButton.Click += new System.EventHandler(this.removeButton_Click);
@@ -144,7 +154,7 @@ namespace Cyotek.AzureContainerEcho.Client
       this.editButton.Location = new System.Drawing.Point(426, 51);
       this.editButton.Name = "editButton";
       this.editButton.Size = new System.Drawing.Size(75, 23);
-      this.editButton.TabIndex = 4;
+      this.editButton.TabIndex = 2;
       this.editButton.Text = "&Edit...";
       this.editButton.UseVisualStyleBackColor = true;
       this.editButton.Click += new System.EventHandler(this.editButton_Click);
@@ -155,7 +165,7 @@ namespace Cyotek.AzureContainerEcho.Client
       this.addButton.Location = new System.Drawing.Point(426, 22);
       this.addButton.Name = "addButton";
       this.addButton.Size = new System.Drawing.Size(75, 23);
-      this.addButton.TabIndex = 3;
+      this.addButton.TabIndex = 1;
       this.addButton.Text = "&Add...";
       this.addButton.UseVisualStyleBackColor = true;
       this.addButton.Click += new System.EventHandler(this.addButton_Click);
@@ -259,6 +269,7 @@ namespace Cyotek.AzureContainerEcho.Client
     private System.Windows.Forms.ColumnHeader accountColumnHeader;
     private System.Windows.Forms.ColumnHeader containerColumnHeader;
     private System.Windows.Forms.ColumnHeader pathColumnHeader;
+    private System.Windows.Forms.Button duplicateButton;
   }
 }
 
