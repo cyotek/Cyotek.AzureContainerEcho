@@ -1,5 +1,10 @@
 # Change Log
 
+## 1.5.0
+
+### Updated
+* Updated third-party packages to latest versions
+
 ## 1.4.1
 ### Added
 * Added the ability to duplicate jobs
