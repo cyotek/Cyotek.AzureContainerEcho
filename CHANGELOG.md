@@ -7,6 +7,7 @@
 ### Changed
 
 * Updated to use .NET 4.8
+* Upgraded/replaced all packages to use latest versions
 
 ## 1.5.0
 
