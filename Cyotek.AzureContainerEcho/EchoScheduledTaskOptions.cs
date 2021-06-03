@@ -1,16 +1,14 @@
 ﻿// Azure Container Echo
 // https://github.com/cyotek/Cyotek.AzureContainerEcho
-// Copyright © 2013-2018 Cyotek Ltd. All Rights Reserved.
+// Copyright © 2013-2021 Cyotek Ltd. All Rights Reserved.
 
 // Licensed under the MIT License. See LICENSE.txt for the full text.
 
 // Found this example useful? 
 // https://www.paypal.me/cyotek
 
+using Azure.Storage.Blobs;
 using System;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Auth;
-using Microsoft.WindowsAzure.Storage.Blob;
 
 namespace Cyotek.AzureContainerEcho
 {
@@ -32,6 +30,7 @@ namespace Cyotek.AzureContainerEcho
     public string AccountKey { get; set; }
 
     public string AccountName { get; set; }
+    public string ConnectionString { get; set; }
 
     public bool AllowUploads { get; set; }
 
@@ -55,6 +54,14 @@ namespace Cyotek.AzureContainerEcho
 
     #region Public Members
 
+    public string GetConnectionString()
+    {
+      return string.IsNullOrEmpty(this.ConnectionString)
+        ? "DefaultEndpointsProtocol=https;AccountName=" + this.AccountName + ";AccountKey=" + this.AccountKey + ";EndpointSuffix=core.windows.net"
+        : this.ConnectionString;
+    }
+
+
     public EchoScheduledTaskOptions Clone()
     {
       return (EchoScheduledTaskOptions)this.MemberwiseClone();
@@ -62,22 +69,11 @@ namespace Cyotek.AzureContainerEcho
 
     public bool DoesContainerExist()
     {
-      StorageCredentials credentials;
-      CloudStorageAccount account;
-      CloudBlobClient client;
-      CloudBlobContainer container;
-      bool result;
+      BlobContainerClient container;
 
-      credentials = new StorageCredentials(this.AccountName, this.AccountKey);
-      account = new CloudStorageAccount(credentials, true);
-      client = account.CreateCloudBlobClient();
-      client.GetServiceProperties(); // this bit validates that the connection settings are valid
+      container = new BlobContainerClient(this.GetConnectionString(), this.ContainerName);
 
-      container = client.GetContainerReference(this.ContainerName);
-
-      result = container.Exists();
-
-      return result;
+      return container.Exists().Value;
     }
 
     public bool Equals(EchoScheduledTaskOptions obj)

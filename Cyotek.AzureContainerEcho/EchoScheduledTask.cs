@@ -1,12 +1,14 @@
 ﻿// Azure Container Echo
 // https://github.com/cyotek/Cyotek.AzureContainerEcho
-// Copyright © 2013-2018 Cyotek Ltd. All Rights Reserved.
+// Copyright © 2013-2021 Cyotek Ltd. All Rights Reserved.
 
 // Licensed under the MIT License. See LICENSE.txt for the full text.
 
 // Found this example useful? 
 // https://www.paypal.me/cyotek
 
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -14,9 +16,6 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using Cyotek.TaskScheduler;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Auth;
-using Microsoft.WindowsAzure.Storage.Blob;
 
 namespace Cyotek.AzureContainerEcho
 {
@@ -50,17 +49,11 @@ namespace Cyotek.AzureContainerEcho
 
       if (options.Enabled)
       {
-        StorageCredentials credentials;
-        CloudStorageAccount account;
-        CloudBlobClient client;
-        CloudBlobContainer container;
-        IList<ICloudBlob> pendingRemote;
-        IDictionary<string, ICloudBlob> remoteItems;
+        BlobContainerClient container;
+        IList<BlobItem> pendingRemote;
+        IDictionary<string, BlobItem> remoteItems;
 
-        credentials = new StorageCredentials(options.AccountName, options.AccountKey);
-        account = new CloudStorageAccount(credentials, true);
-        client = account.CreateCloudBlobClient();
-        container = client.GetContainerReference(options.ContainerName);
+        container = new BlobContainerClient(options.GetConnectionString(), options.ContainerName);
 
         Debug.Print("Running task '{0}'", this.Name);
 
@@ -68,24 +61,18 @@ namespace Cyotek.AzureContainerEcho
         container.CreateIfNotExists();
 
         // get all the remote items first so we don't have to query them twice
-        remoteItems = new Dictionary<string, ICloudBlob>(StringComparer.InvariantCultureIgnoreCase);
+        remoteItems = new Dictionary<string, BlobItem>(StringComparer.InvariantCultureIgnoreCase);
 
-        foreach (IListBlobItem blobItem in container.ListBlobs())
+        foreach (BlobItem blobItem in container.GetBlobs())
         {
-          ICloudBlob blob;
-
-          blob = blobItem as ICloudBlob;
-          if (blob != null)
-          {
-            remoteItems.Add(blob.Name, blob);
-          }
+          remoteItems.Add(blobItem.Name, blobItem);
         }
 
         // download
         pendingRemote = this.GetMissingOrChangedRemoteBlobs(remoteItems, options.LocalPath, options.CheckForNewFilesOnly, options.LastRun);
         if (pendingRemote.Any() && !this.IsCancelPending)
         {
-          this.DownloadPendingBlobs(pendingRemote, options);
+          this.DownloadPendingBlobs(container, pendingRemote, options);
         }
 
         //  upload
@@ -107,23 +94,26 @@ namespace Cyotek.AzureContainerEcho
       }
     }
 
+
     #endregion
 
     #region Private Members
 
-    private void DownloadPendingBlobs(IEnumerable<ICloudBlob> pendingBlobs, EchoScheduledTaskOptions options)
+    private void DownloadPendingBlobs(BlobContainerClient container, IEnumerable<BlobItem> pendingBlobs, EchoScheduledTaskOptions options)
     {
-      foreach (ICloudBlob fileBlob in pendingBlobs)
+      foreach (BlobItem fileBlob in pendingBlobs)
       {
+        BlobClient blobClient;
         string localFileName;
 
         Debug.Print("Downloading '{0}'", fileBlob.Name);
 
+        blobClient = container.GetBlobClient(fileBlob.Name);
         localFileName = Path.Combine(options.LocalPath, fileBlob.Name);
 
         using (FileStream stream = File.OpenWrite(localFileName))
         {
-          fileBlob.DownloadToStream(stream);
+          blobClient.DownloadTo(stream);
         }
 
         if (this.GetMd5HashFromFile(localFileName) != this.GetBlobHash(fileBlob))
@@ -139,7 +129,7 @@ namespace Cyotek.AzureContainerEcho
         if (options.DeleteAfterDownload)
         {
           Debug.Print("Deleting '{0}'", fileBlob.Name);
-          fileBlob.Delete();
+          blobClient.Delete();
         }
 
         if (this.IsCancelPending)
@@ -149,9 +139,9 @@ namespace Cyotek.AzureContainerEcho
       }
     }
 
-    private Guid GetBlobHash(ICloudBlob fileBlob)
+    private Guid GetBlobHash(BlobItem fileBlob)
     {
-      return new Guid(Convert.FromBase64String(fileBlob.Properties.ContentMD5));
+      return new Guid(fileBlob.Properties.ContentHash);
     }
 
     private Guid GetMd5HashFromFile(string fileName)
@@ -167,7 +157,7 @@ namespace Cyotek.AzureContainerEcho
       return new Guid(hash);
     }
 
-    private IList<string> GetMissingOrChangedLocalBlobs(IDictionary<string, ICloudBlob> remoteItems, string localPath)
+    private IList<string> GetMissingOrChangedLocalBlobs(IDictionary<string, BlobItem> remoteItems, string localPath)
     {
       IList<string> results;
 
@@ -175,17 +165,12 @@ namespace Cyotek.AzureContainerEcho
 
       foreach (string fileName in Directory.GetFiles(localPath))
       {
-        ICloudBlob fileBlob;
+        BlobItem fileBlob;
 
         // ReSharper disable once AssignNullToNotNullAttribute
         remoteItems.TryGetValue(Path.GetFileName(fileName), out fileBlob);
 
-        if (fileBlob != null && string.IsNullOrEmpty(fileBlob.Properties.ContentMD5))
-        {
-          fileBlob.FetchAttributes();
-        }
-
-        if (fileBlob == null || string.IsNullOrEmpty(fileBlob.Properties.ContentMD5) || this.GetMd5HashFromFile(fileName) != this.GetBlobHash(fileBlob))
+        if (fileBlob == null || this.GetMd5HashFromFile(fileName) != this.GetBlobHash(fileBlob))
         {
           results.Add(fileName);
 
@@ -201,17 +186,17 @@ namespace Cyotek.AzureContainerEcho
       return results;
     }
 
-    private IList<ICloudBlob> GetMissingOrChangedRemoteBlobs(IEnumerable<KeyValuePair<string, ICloudBlob>> remoteItems, string localPath, bool checkForNewFilesOnly, DateTime? oldestModificationTime)
+    private IList<BlobItem> GetMissingOrChangedRemoteBlobs(IEnumerable<KeyValuePair<string, BlobItem>> remoteItems, string localPath, bool checkForNewFilesOnly, DateTime? oldestModificationTime)
     {
-      IList<ICloudBlob> results;
+      IList<BlobItem> results;
 
-      results = new List<ICloudBlob>();
+      results = new List<BlobItem>();
 
-      foreach (KeyValuePair<string, ICloudBlob> pair in remoteItems)
+      foreach (KeyValuePair<string, BlobItem> pair in remoteItems)
       {
         bool shouldDownloadBlob;
         string localFileName;
-        ICloudBlob fileBlob;
+        BlobItem fileBlob;
 
         fileBlob = pair.Value;
         localFileName = Path.Combine(localPath, fileBlob.Name);
@@ -229,19 +214,7 @@ namespace Cyotek.AzureContainerEcho
         }
         else
         {
-          if (!File.Exists(localFileName))
-          {
-            // the file is missing from the local machine so download
-            shouldDownloadBlob = true;
-          }
-          else
-          {
-            Guid remoteHash;
-
-            // compare hashes to see if the file has been modified
-            remoteHash = !string.IsNullOrEmpty(fileBlob.Properties.ContentMD5) ? this.GetBlobHash(fileBlob) : Guid.Empty;
-            shouldDownloadBlob = remoteHash != this.GetMd5HashFromFile(localFileName);
-          }
+          shouldDownloadBlob = !File.Exists(localFileName) || this.GetBlobHash(fileBlob) != this.GetMd5HashFromFile(localFileName);
         }
 
         if (shouldDownloadBlob)
@@ -260,32 +233,24 @@ namespace Cyotek.AzureContainerEcho
       return results;
     }
 
-    private void UploadPendingBlobs(IEnumerable<string> fileNames, CloudBlobContainer container)
+    private void UploadPendingBlobs(IEnumerable<string> fileNames, BlobContainerClient container)
     {
       foreach (string fileName in fileNames)
       {
         FileInfo fileInfo;
-        CloudBlockBlob fileBlob;
+        BlobClient fileBlob;
         string mimeType;
 
         fileInfo = new FileInfo(fileName);
-        fileBlob = container.GetBlockBlobReference(fileInfo.Name);
+        fileBlob = container.GetBlobClient(fileInfo.Name);
+        mimeType = MimeHelpers.GetMimeTypeFromExtension(fileInfo.Extension);
 
         Debug.Print("Uploading '{0}'", fileBlob.Name);
 
         // upload the core data
         using (FileStream stream = File.OpenRead(fileInfo.FullName))
         {
-          fileBlob.UploadFromStream(stream);
-        }
-
-        // update the mimetype, if one was available, otherwise just leave it as is
-        mimeType = MimeHelpers.GetMimeTypeFromExtension(fileInfo.Extension);
-        if (!string.IsNullOrEmpty(mimeType))
-        {
-          fileBlob.FetchAttributes();
-          fileBlob.Properties.ContentType = mimeType;
-          fileBlob.SetProperties();
+          fileBlob.Upload(stream, new BlobHttpHeaders { ContentType = mimeType });
         }
 
         // check to see if something has requested the task be cancelled and break out if so
