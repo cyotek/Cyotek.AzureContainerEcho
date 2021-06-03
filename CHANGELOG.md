@@ -1,5 +1,13 @@
 # Change Log
 
+## 2.0
+
+### Added
+
+### Changed
+
+* Updated to use .NET 4.8
+
 ## 1.5.0
 
 ### Updated
