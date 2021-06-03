@@ -4,17 +4,18 @@
 
 // Licensed under the MIT License. See LICENSE.txt for the full text.
 
-// Found this example useful? 
+// Found this example useful?
 // https://www.paypal.me/cyotek
 
+using Cyotek.AzureContainerEcho.Client.Properties;
+using Cyotek.TaskScheduler;
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
-using Cyotek.AzureContainerEcho.Client.Properties;
-using Cyotek.TaskScheduler;
 
 // Creating long running Windows Forms applications without a start-up form
 // https://www.cyotek.com/blog/creating-long-running-windows-forms-applications-without-a-start-up-form
@@ -23,7 +24,7 @@ namespace Cyotek.AzureContainerEcho.Client
 {
   internal class ApplicationContext : TrayIconApplicationContext
   {
-    #region Instance Fields
+    #region Private Fields
 
     private readonly JobManager _jobManager;
 
@@ -33,23 +34,13 @@ namespace Cyotek.AzureContainerEcho.Client
 
     private SettingsDialog _settingsDialog;
 
-    #endregion
+    #endregion Private Fields
 
     #region Public Constructors
 
     public ApplicationContext()
     {
       string logPath;
-
-      this.ContextMenu.Items.Add("&Settings...", Resources.Settings, this.SettingsContextMenuClickHandler).Font = new Font(this.ContextMenu.Font, FontStyle.Bold);
-      this.ContextMenu.Items.Add("-");
-      this.ContextMenu.Items.Add("&Run Now", Resources.Run, this.RunNowContextMenuClickHandler);
-      this.ContextMenu.Items.Add("-");
-      this.ContextMenu.Items.Add("Open &Log", null, this.LogContextMenuClickHandler);
-      this.ContextMenu.Items.Add("-");
-      this.ContextMenu.Items.Add("&About", null, this.AboutContextMenuClickHandler);
-      this.ContextMenu.Items.Add("-");
-      this.ContextMenu.Items.Add("E&xit", null, this.ExitContextMenuClickHandler);
 
       logPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"Cyotek\Azure Container Echo\");
       _logFileName = Path.Combine(logPath, "log.txt");
@@ -71,30 +62,48 @@ namespace Cyotek.AzureContainerEcho.Client
       _jobManager.Enabled = true;
     }
 
-    #endregion
+    #endregion Public Constructors
 
-    #region Overridden Methods
+    #region Protected Methods
 
-    protected override void OnApplicationExit(EventArgs e)
+    protected override void Dispose(bool disposing)
     {
-      if (_jobManager != null)
+      base.Dispose(disposing);
+
+      if (disposing && _jobManager != null)
       {
         _jobManager.Dispose();
       }
+    }
 
-      base.OnApplicationExit(e);
+    protected override void OnContextMenuOpening(CancelEventArgs e)
+    {
+      this.ContextMenu.Items.Add("&Settings...", Resources.Settings, this.SettingsContextMenuClickHandler).Font = new Font(this.ContextMenu.Font, FontStyle.Bold);
+      this.ContextMenu.Items.Add("-");
+      this.ContextMenu.Items.Add("&Run Now", Resources.Run, this.RunNowContextMenuClickHandler);
+      this.ContextMenu.Items.Add("-");
+      this.ContextMenu.Items.Add("Open &Log", null, this.LogContextMenuClickHandler);
+      this.ContextMenu.Items.Add("-");
+      this.ContextMenu.Items.Add("&About", null, this.AboutContextMenuClickHandler);
+      this.ContextMenu.Items.Add("-");
+      this.ContextMenu.Items.Add("E&xit", null, this.ExitContextMenuClickHandler);
+
+      base.OnContextMenuOpening(e);
     }
 
     protected override void OnTrayIconDoubleClick(MouseEventArgs e)
     {
-      this.ShowSettings();
+      if (e.Button == MouseButtons.Left)
+      {
+        this.ShowSettings();
+      }
 
       base.OnTrayIconDoubleClick(e);
     }
 
-    #endregion
+    #endregion Protected Methods
 
-    #region Private Members
+    #region Private Methods
 
     private void AboutContextMenuClickHandler(object sender, EventArgs eventArgs)
     {
@@ -104,6 +113,34 @@ namespace Cyotek.AzureContainerEcho.Client
     private void ExitContextMenuClickHandler(object sender, EventArgs eventArgs)
     {
       this.ExitThread();
+    }
+
+    private void JobManagerTaskCancelledHandler(object sender, ScheduledTaskEventArgs e)
+    {
+      this.WriteLog("Task Cancelled: {0}", e.Task.Name);
+
+      this.SetIcon();
+    }
+
+    private void JobManagerTaskCompletedHandler(object sender, ScheduledTaskEventArgs e)
+    {
+      this.WriteLog("Task Complete: {0}", e.Task.Name);
+
+      this.SetIcon();
+    }
+
+    private void JobManagerTaskExceptionHandler(object sender, ScheduledTaskExceptionEventArgs e)
+    {
+      this.WriteLog("Task Failed: {0}\n{1}", e.Task.Name, e.Exception.Message);
+
+      this.TrayIcon.ShowBalloonTip(10000, e.Task.Name, e.Exception.GetBaseException().Message, ToolTipIcon.Error);
+    }
+
+    private void JobManagerTaskStartedHandler(object sender, ScheduledTaskEventArgs e)
+    {
+      this.WriteLog("Task Started: {0}", e.Task.Name);
+
+      this.SetIcon();
     }
 
     private void LogContextMenuClickHandler(object sender, EventArgs e)
@@ -187,38 +224,6 @@ namespace Cyotek.AzureContainerEcho.Client
       File.AppendAllText(_logFileName, string.Concat(DateTime.UtcNow.ToShortDateString(), " ", DateTime.UtcNow.ToShortTimeString(), "\t", string.Format(format, args), Environment.NewLine));
     }
 
-    #endregion
-
-    #region Event Handlers
-
-    private void JobManagerTaskCancelledHandler(object sender, ScheduledTaskEventArgs e)
-    {
-      this.WriteLog("Task Cancelled: {0}", e.Task.Name);
-
-      this.SetIcon();
-    }
-
-    private void JobManagerTaskCompletedHandler(object sender, ScheduledTaskEventArgs e)
-    {
-      this.WriteLog("Task Complete: {0}", e.Task.Name);
-
-      this.SetIcon();
-    }
-
-    private void JobManagerTaskExceptionHandler(object sender, ScheduledTaskExceptionEventArgs e)
-    {
-      this.WriteLog("Task Failed: {0}\n{1}", e.Task.Name, e.Exception.Message);
-
-      this.TrayIcon.ShowBalloonTip(10000, e.Task.Name, e.Exception.GetBaseException().Message, ToolTipIcon.Error);
-    }
-
-    private void JobManagerTaskStartedHandler(object sender, ScheduledTaskEventArgs e)
-    {
-      this.WriteLog("Task Started: {0}", e.Task.Name);
-
-      this.SetIcon();
-    }
-
-    #endregion
+    #endregion Private Methods
   }
 }
