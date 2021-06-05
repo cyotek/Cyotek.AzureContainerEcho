@@ -1,12 +1,14 @@
 ﻿// Azure Container Echo
 // https://github.com/cyotek/Cyotek.AzureContainerEcho
-// Copyright © 2013-2018 Cyotek Ltd. All Rights Reserved.
+
+// Copyright © 2013-2021 Cyotek Ltd. All Rights Reserved.
 
 // Licensed under the MIT License. See LICENSE.txt for the full text.
 
-// Found this example useful? 
+// Found this example useful?
 // https://www.paypal.me/cyotek
 
+using Cyotek.Demo.Windows.Forms;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -16,17 +18,25 @@ namespace Cyotek.AzureContainerEcho.Client
 {
   internal partial class AccountPropertiesDialog : BaseForm
   {
+    #region Private Fields
+
+    private readonly EchoScheduledTaskOptions _options;
+
+    #endregion Private Fields
+
     #region Public Constructors
 
     public AccountPropertiesDialog()
     {
-      InitializeComponent();
+      this.InitializeComponent();
     }
 
     public AccountPropertiesDialog(EchoScheduledTaskOptions options)
       : this()
     {
-      this.Options = options;
+      _options = options;
+
+      connectionStringTextBox.Text = options.ConnectionString;
       accountNameTextBox.Text = options.AccountName;
       accessKeyTextBox.Text = options.AccountKey;
       containerTextBox.Text = options.ContainerName;
@@ -36,17 +46,64 @@ namespace Cyotek.AzureContainerEcho.Client
       newFilesOnlyCheckBox.Checked = options.CheckForNewFilesOnly;
       enabledCheckBox.Checked = options.Enabled;
       deleteAfterDownloadCheckBox.Checked = options.DeleteAfterDownload;
+      nameTextBox.Text = options.Name;
     }
 
-    #endregion
+    #endregion Public Constructors
 
-    #region Private Class Properties
+    #region Private Methods
 
-    private EchoScheduledTaskOptions Options { get; set; }
+    private void CancelButton_Click(object sender, EventArgs e)
+    {
+      this.DialogResult = DialogResult.Cancel;
+      this.Close();
+    }
 
-    #endregion
+    private void LocalPathBrowseButton_Click(object sender, EventArgs e)
+    {
+      using (FolderBrowserDialog dialog = new FolderBrowserDialog
+      {
+        Description = "Select download &folder:",
+        SelectedPath = localPathTextBox.Text,
+        ShowNewFolderButton = true
+      })
+      {
+        if (dialog.ShowDialog(this) == DialogResult.OK)
+        {
+          localPathTextBox.Text = dialog.SelectedPath;
+        }
+      }
+    }
 
-    #region Private Members
+    private void LocalPathExploreButton_Click(object sender, EventArgs e)
+    {
+      this.OpenFolderInExplorer(localPathTextBox.Text);
+    }
+
+    private void OkButton_Click(object sender, EventArgs e)
+    {
+      if (!this.ValidateOptions())
+      {
+        this.DialogResult = DialogResult.None;
+      }
+      else
+      {
+        _options.ConnectionString = connectionStringTextBox.Text;
+        _options.AccountName = accountNameTextBox.Text;
+        _options.AccountKey = accessKeyTextBox.Text;
+        _options.ContainerName = containerTextBox.Text;
+        _options.LocalPath = localPathTextBox.Text;
+        _options.Interval = TimeSpan.FromMinutes((double)minutesNumericUpDown.Value);
+        _options.AllowUploads = allowUploadsCheckBox.Checked;
+        _options.CheckForNewFilesOnly = newFilesOnlyCheckBox.Checked;
+        _options.Enabled = enabledCheckBox.Checked;
+        _options.DeleteAfterDownload = deleteAfterDownloadCheckBox.Checked;
+        _options.Name = nameTextBox.Text;
+
+        this.DialogResult = DialogResult.OK;
+        this.Close();
+      }
+    }
 
     private void OpenFolderInExplorer(string folderName)
     {
@@ -77,26 +134,67 @@ namespace Cyotek.AzureContainerEcho.Client
       }
     }
 
+    private void TestConnectionLinkLabel_Click(object sender, EventArgs e)
+    {
+      if (this.ValidateOptions())
+      {
+        try
+        {
+          bool containerExists;
+          string suffix;
+
+          this.Enabled = false;
+          Application.DoEvents(); // HACK: Evil but thats what I get for being lazy
+
+          containerExists = new EchoScheduledTaskOptions
+          {
+            ConnectionString = connectionStringTextBox.Text,
+            AccountName = accountNameTextBox.Text,
+            AccountKey = accessKeyTextBox.Text,
+            ContainerName = containerTextBox.Text
+          }.DoesContainerExist();
+
+          suffix = containerExists ? "." : ", however the specified container does not exist.";
+
+          MessageBox.Show(string.Concat("Connection successful", suffix), "Test Connection", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+        catch (Exception ex)
+        {
+          MessageBox.Show(string.Format("Connection failed. {0}", ex.GetBaseException().Message), "Test Connection", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+        finally
+        {
+          this.Enabled = true;
+        }
+      }
+    }
+
     private bool ValidateOptions()
     {
       string message;
+      string connectionString;
       string accountName;
       string accountKey;
       string container;
       string localPath;
+      bool hasConnectionString;
+      bool hasCredentials;
 
+      connectionString = connectionStringTextBox.Text;
       accountName = accountNameTextBox.Text;
       accountKey = accessKeyTextBox.Text;
       container = containerTextBox.Text;
       localPath = localPathTextBox.Text;
+      hasConnectionString = !string.IsNullOrEmpty(connectionString);
+      hasCredentials = !string.IsNullOrEmpty(accountName) && !string.IsNullOrEmpty(accountKey);
 
-      if (string.IsNullOrWhiteSpace(accountName))
+      if (hasConnectionString && hasCredentials)
       {
-        message = "Please enter the Azure storage account name.";
+        message = "Please do not specify both a connection string and account credentials";
       }
-      else if (string.IsNullOrWhiteSpace(accountKey))
+      else if (!hasConnectionString && !hasCredentials)
       {
-        message = "Please enter the Azure storage access key.";
+        message = "Please enter either a full connection string or the account key and name.";
       }
       else if (string.IsNullOrWhiteSpace(container))
       {
@@ -123,94 +221,6 @@ namespace Cyotek.AzureContainerEcho.Client
       return string.IsNullOrEmpty(message);
     }
 
-    #endregion
-
-    #region Event Handlers
-
-    private void cancelButton_Click(object sender, EventArgs e)
-    {
-      this.DialogResult = DialogResult.Cancel;
-      this.Close();
-    }
-
-    private void localPathBrowseButton_Click(object sender, EventArgs e)
-    {
-      using (FolderBrowserDialog dialog = new FolderBrowserDialog
-                                          {
-                                            Description = "Select download &folder:",
-                                            SelectedPath = localPathTextBox.Text,
-                                            ShowNewFolderButton = true
-                                          })
-      {
-        if (dialog.ShowDialog(this) == DialogResult.OK)
-        {
-          localPathTextBox.Text = dialog.SelectedPath;
-        }
-      }
-    }
-
-    private void localPathExploreButton_Click(object sender, EventArgs e)
-    {
-      this.OpenFolderInExplorer(localPathTextBox.Text);
-    }
-
-    private void okButton_Click(object sender, EventArgs e)
-    {
-      if (!this.ValidateOptions())
-      {
-        this.DialogResult = DialogResult.None;
-      }
-      else
-      {
-        this.Options.AccountName = accountNameTextBox.Text;
-        this.Options.AccountKey = accessKeyTextBox.Text;
-        this.Options.ContainerName = containerTextBox.Text;
-        this.Options.LocalPath = localPathTextBox.Text;
-        this.Options.Interval = TimeSpan.FromMinutes((double)minutesNumericUpDown.Value);
-        this.Options.AllowUploads = allowUploadsCheckBox.Checked;
-        this.Options.CheckForNewFilesOnly = newFilesOnlyCheckBox.Checked;
-        this.Options.Enabled = enabledCheckBox.Checked;
-        this.Options.DeleteAfterDownload = deleteAfterDownloadCheckBox.Checked;
-
-        this.DialogResult = DialogResult.OK;
-        this.Close();
-      }
-    }
-
-    private void testConnectionLinkLabel_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
-    {
-      if (this.ValidateOptions())
-      {
-        try
-        {
-          bool containerExists;
-          string suffix;
-
-          this.Enabled = false;
-          Application.DoEvents(); // HACK: Evil but thats what I get for being lazy
-
-          containerExists = new EchoScheduledTaskOptions
-                            {
-                              AccountName = accountNameTextBox.Text,
-                              AccountKey = accessKeyTextBox.Text,
-                              ContainerName = containerTextBox.Text
-                            }.DoesContainerExist();
-
-          suffix = containerExists ? "." : ", however the specified container does not exist.";
-
-          MessageBox.Show(string.Concat("Connection successful", suffix), "Test Connection", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-        catch (Exception ex)
-        {
-          MessageBox.Show(string.Format("Connection failed. {0}", ex.GetBaseException().Message), "Test Connection", MessageBoxButtons.OK, MessageBoxIcon.Error);
-        }
-        finally
-        {
-          this.Enabled = true;
-        }
-      }
-    }
-
-    #endregion
+    #endregion Private Methods
   }
 }

@@ -1,27 +1,26 @@
 ﻿// Azure Container Echo
 // https://github.com/cyotek/Cyotek.AzureContainerEcho
-// Copyright © 2013-2018 Cyotek Ltd. All Rights Reserved.
+
+// Copyright © 2013-2021 Cyotek Ltd. All Rights Reserved.
 
 // Licensed under the MIT License. See LICENSE.txt for the full text.
 
-// Found this example useful? 
+// Found this example useful?
 // https://www.paypal.me/cyotek
 
+using Cyotek.TaskScheduler;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using Cyotek.TaskScheduler;
-using Newtonsoft.Json;
 
 namespace Cyotek.AzureContainerEcho
 {
   public class JobManager : IDisposable, IEnumerable<EchoScheduledTaskOptions>
   {
-    #region Instance Fields
+    #region Private Fields
 
     private readonly List<EchoScheduledTaskOptions> _jobData;
 
@@ -29,12 +28,17 @@ namespace Cyotek.AzureContainerEcho
 
     private bool _enabled;
 
-    #endregion
+    private ContainerEchoSettings _settings;
+
+    #endregion Private Fields
 
     #region Public Constructors
 
     public JobManager()
     {
+      _settings = new ContainerEchoSettings();
+      _settings.Jobs.CollectionChanged += this.JobsCollectionChangedEventHandler;
+
       _jobData = new List<EchoScheduledTaskOptions>();
 
       _scheduler = TaskScheduleManager.CreateScheduler("AzureContainerEcho");
@@ -46,9 +50,9 @@ namespace Cyotek.AzureContainerEcho
       _scheduler.TaskException += this.SchedulerTaskExceptionHandler;
     }
 
-    #endregion
+    #endregion Public Constructors
 
-    #region Destructors
+    #region Private Destructors
 
     /// <summary>
     /// Finalizes an instance of the <see cref="JobManager" /> class.
@@ -58,9 +62,9 @@ namespace Cyotek.AzureContainerEcho
       this.Dispose(false);
     }
 
-    #endregion
+    #endregion Private Destructors
 
-    #region Events
+    #region Public Events
 
     /// <summary>
     /// Occurs when the Enabled property value changes
@@ -76,13 +80,13 @@ namespace Cyotek.AzureContainerEcho
 
     public event EventHandler<ScheduledTaskEventArgs> TaskStarted;
 
-    #endregion
+    #endregion Public Events
 
     #region Public Properties
 
     [Category("")]
     [DefaultValue("")]
-    public virtual bool Enabled
+    public bool Enabled
     {
       get { return _enabled; }
       set
@@ -108,14 +112,34 @@ namespace Cyotek.AzureContainerEcho
       get { return _scheduler; }
     }
 
-    public string StorageFileName
+    public ContainerEchoSettings Settings
     {
-      get { return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "cyotek.AzureContainerEcho.jobs.json"); }
+      get => _settings;
+      set
+      {
+        if (!object.ReferenceEquals(_settings, value))
+        {
+          if (_settings != null)
+          {
+            this.KillAllJobs();
+            _settings.Jobs.CollectionChanged -= this.JobsCollectionChangedEventHandler;
+          }
+
+          _settings = value;
+
+          if (_settings != null)
+          {
+            _settings.Jobs.CollectionChanged += this.JobsCollectionChangedEventHandler;
+
+            this.Schedule(_settings.Jobs);
+          }
+        }
+      }
     }
 
-    #endregion
+    #endregion Public Properties
 
-    #region Public Members
+    #region Public Methods
 
     /// <summary>
     /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
@@ -140,77 +164,20 @@ namespace Cyotek.AzureContainerEcho
 
     public EchoScheduledTask GetJob(Guid id)
     {
-      return (EchoScheduledTask)this.Scheduler.SingleOrDefault(j => ((EchoScheduledTaskOptions)j.Data["options"]).Id == id);
+      return (EchoScheduledTask)_scheduler.SingleOrDefault(j => ((EchoScheduledTaskOptions)j.Data["options"]).Id == id);
     }
 
-    public IEnumerable<IScheduledTask> GetJobs()
-    {
-      return this.Scheduler;
-    }
+    public IEnumerable<IScheduledTask> GetJobs() => _scheduler;
 
     public void KillJob(Guid id)
     {
       EchoScheduledTask job;
 
       job = this.GetJob(id);
+
       if (job != null)
       {
-        if (job.InProgress)
-        {
-          job.Cancel();
-        }
-        this.Scheduler.Remove(job);
-        _jobData.Remove((EchoScheduledTaskOptions)job.Data["options"]);
-      }
-    }
-
-    public void Load()
-    {
-      string fileName;
-
-      fileName = this.StorageFileName;
-
-      if (File.Exists(fileName))
-      {
-        JsonSerializer serializer;
-
-        serializer = new JsonSerializer();
-
-        using (Stream file = File.OpenRead(fileName))
-        {
-          using (TextReader reader = new StreamReader(file))
-          {
-            IEnumerable<EchoScheduledTaskOptions> jobs;
-
-            jobs = (IEnumerable<EchoScheduledTaskOptions>)serializer.Deserialize(reader, typeof(IEnumerable<EchoScheduledTaskOptions>));
-
-            _jobData.Clear();
-            foreach (EchoScheduledTaskOptions job in jobs)
-            {
-              this.Schedule(job);
-            }
-          }
-        }
-      }
-    }
-
-    public void Save()
-    {
-      JsonSerializer serializer;
-      JsonSerializerSettings serializerSettings;
-
-      serializerSettings = new JsonSerializerSettings
-                           {
-                             Formatting = Formatting.Indented
-                           };
-      serializer = JsonSerializer.Create(serializerSettings);
-
-      using (Stream file = File.Create(this.StorageFileName))
-      {
-        using (TextWriter writer = new StreamWriter(file))
-        {
-          serializer.Serialize(writer, _jobData);
-        }
+        this.KillJob(job);
       }
     }
 
@@ -218,21 +185,36 @@ namespace Cyotek.AzureContainerEcho
     {
       IScheduledTask job;
 
+#if DEBUG
+      System.Diagnostics.Debug.WriteLine("Scheduling: " + options.Id);
+#endif
+
       job = new EchoScheduledTask
-            {
-              Name = options.ContainerName,
-              RepeatingInterval = options.Interval
-            };
+      {
+        Name = options.ContainerName,
+        RepeatingInterval = options.Interval
+      };
       job.Data["Options"] = options;
 
-      this.Scheduler.Add(job);
+      _scheduler.Add(job);
 
       _jobData.Add(options);
     }
 
-    #endregion
+    /// <summary>
+    /// Returns an enumerator that iterates through a collection.
+    /// </summary>
+    /// <returns>
+    /// An <see cref="T:System.Collections.IEnumerator"/> object that can be used to iterate through the collection.
+    /// </returns>
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+      return this.GetEnumerator();
+    }
 
-    #region Protected Members
+    #endregion Public Methods
+
+    #region Protected Methods
 
     /// <summary>
     /// Releases unmanaged and - optionally - managed resources.
@@ -244,7 +226,7 @@ namespace Cyotek.AzureContainerEcho
       {
         if (disposing)
         {
-          this.Scheduler.Stop();
+          _scheduler.Stop();
         }
 
         this.IsDisposed = true;
@@ -261,19 +243,16 @@ namespace Cyotek.AzureContainerEcho
 
       if (this.Enabled)
       {
-        this.Scheduler.Start();
+        _scheduler.Start();
       }
       else
       {
-        this.Scheduler.Stop();
+        _scheduler.Stop();
       }
 
       handler = this.EnabledChanged;
 
-      if (handler != null)
-      {
-        handler(this, e);
-      }
+      handler?.Invoke(this, e);
     }
 
     /// <summary>
@@ -286,10 +265,7 @@ namespace Cyotek.AzureContainerEcho
 
       handler = this.TaskCancelled;
 
-      if (handler != null)
-      {
-        handler(this, e);
-      }
+      handler?.Invoke(this, e);
     }
 
     /// <summary>
@@ -302,10 +278,7 @@ namespace Cyotek.AzureContainerEcho
 
       handler = this.TaskCompleted;
 
-      if (handler != null)
-      {
-        handler(this, e);
-      }
+      handler?.Invoke(this, e);
     }
 
     /// <summary>
@@ -318,10 +291,7 @@ namespace Cyotek.AzureContainerEcho
 
       handler = this.TaskException;
 
-      if (handler != null)
-      {
-        handler(this, e);
-      }
+      handler?.Invoke(this, e);
     }
 
     /// <summary>
@@ -334,26 +304,86 @@ namespace Cyotek.AzureContainerEcho
 
       handler = this.TaskStarted;
 
-      if (handler != null)
+      handler?.Invoke(this, e);
+    }
+
+    #endregion Protected Methods
+
+    #region Private Methods
+
+    private void JobsCollectionChangedEventHandler(object sender, NotifyCollectionChangedEventArgs e)
+    {
+      switch (e.Action)
       {
-        handler(this, e);
+        case NotifyCollectionChangedAction.Add:
+          this.Schedule(e.NewItems);
+          break;
+
+        case NotifyCollectionChangedAction.Remove:
+          this.KillJobs(e.OldItems);
+          break;
+
+        case NotifyCollectionChangedAction.Replace:
+          this.KillJobs(e.OldItems);
+          this.Schedule(e.NewItems);
+          break;
+
+        case NotifyCollectionChangedAction.Move:
+          // no-op
+          break;
+
+        case NotifyCollectionChangedAction.Reset:
+          this.KillAllJobs();
+          break;
+
+        default:
+          throw new ArgumentOutOfRangeException();
       }
     }
 
-    #endregion
-
-    #region Private Members
-
-    private void Log(string text)
+    private void KillAllJobs()
     {
-      // TODO: Log to file
+      IScheduledTask[] jobs;
 
-      Debug.WriteLine(text);
+      jobs = this.GetJobs().ToArray();
+
+      for (int i = 0; i < jobs.Length; i++)
+      {
+        this.KillJob((EchoScheduledTask)jobs[i]);
+      }
     }
 
-    #endregion
+    private void KillJob(EchoScheduledTask job)
+    {
+#if DEBUG
+      System.Diagnostics.Debug.WriteLine("Removing: " + ((EchoScheduledTaskOptions)job.Data["Options"]).Id);
+#endif
 
-    #region Event Handlers
+      if (job.InProgress)
+      {
+        job.Cancel();
+      }
+
+      _scheduler.Remove(job);
+
+      _jobData.Remove((EchoScheduledTaskOptions)job.Data["options"]);
+    }
+
+    private void KillJobs(IList items)
+    {
+      for (int i = 0; i < items.Count; i++)
+      {
+        this.KillJob(((EchoScheduledTaskOptions)items[i]).Id);
+      }
+    }
+
+    private void Schedule(IList items)
+    {
+      for (int i = 0; i < items.Count; i++)
+      {
+        this.Schedule((EchoScheduledTaskOptions)items[i]);
+      }
+    }
 
     private void SchedulerTaskCancelledHandler(object sender, ScheduledTaskEventArgs e)
     {
@@ -367,8 +397,6 @@ namespace Cyotek.AzureContainerEcho
 
     private void SchedulerTaskExceptionHandler(object sender, ScheduledTaskExceptionEventArgs e)
     {
-      this.Log(e.Exception.ToString());
-
       this.OnTaskException(e);
     }
 
@@ -377,21 +405,6 @@ namespace Cyotek.AzureContainerEcho
       this.OnTaskStarted(e);
     }
 
-    #endregion
-
-    #region IEnumerable<EchoScheduledTaskOptions> Members
-
-    /// <summary>
-    /// Returns an enumerator that iterates through a collection.
-    /// </summary>
-    /// <returns>
-    /// An <see cref="T:System.Collections.IEnumerator"/> object that can be used to iterate through the collection.
-    /// </returns>
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-      return GetEnumerator();
-    }
-
-    #endregion
+    #endregion Private Methods
   }
 }

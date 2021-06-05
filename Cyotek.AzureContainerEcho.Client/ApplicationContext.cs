@@ -1,6 +1,7 @@
 ﻿// Azure Container Echo
 // https://github.com/cyotek/Cyotek.AzureContainerEcho
-// Copyright © 2013-2018 Cyotek Ltd. All Rights Reserved.
+
+// Copyright © 2013-2021 Cyotek Ltd. All Rights Reserved.
 
 // Licensed under the MIT License. See LICENSE.txt for the full text.
 
@@ -8,13 +9,13 @@
 // https://www.paypal.me/cyotek
 
 using Cyotek.AzureContainerEcho.Client.Properties;
+using Cyotek.Demo.Windows.Forms;
 using Cyotek.TaskScheduler;
 using System;
-using System.ComponentModel;
-using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Windows.Forms;
 
 // Creating long running Windows Forms applications without a start-up form
@@ -28,11 +29,15 @@ namespace Cyotek.AzureContainerEcho.Client
 
     private readonly JobManager _jobManager;
 
-    private readonly string _logFileName;
+    private string _logFileName;
 
-    private AboutDialog _aboutDialog;
+    private Stream _logStream;
+
+    private TextWriter _logWriter;
 
     private SettingsDialog _settingsDialog;
+
+    private string _settingsFileName;
 
     #endregion Private Fields
 
@@ -40,22 +45,14 @@ namespace Cyotek.AzureContainerEcho.Client
 
     public ApplicationContext()
     {
-      string logPath;
-
-      logPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"Cyotek\Azure Container Echo\");
-      _logFileName = Path.Combine(logPath, "log.txt");
-
-      if (!Directory.Exists(logPath))
-      {
-        Directory.CreateDirectory(logPath);
-      }
-
       _jobManager = new JobManager();
       _jobManager.TaskStarted += this.JobManagerTaskStartedHandler;
       _jobManager.TaskCompleted += this.JobManagerTaskCompletedHandler;
       _jobManager.TaskCancelled += this.JobManagerTaskCancelledHandler;
       _jobManager.TaskException += this.JobManagerTaskExceptionHandler;
-      _jobManager.Load();
+
+      this.InitializeLog();
+      this.LoadSettings();
 
       this.SetIcon();
 
@@ -68,27 +65,37 @@ namespace Cyotek.AzureContainerEcho.Client
 
     protected override void Dispose(bool disposing)
     {
-      base.Dispose(disposing);
-
-      if (disposing && _jobManager != null)
+      if (disposing)
       {
-        _jobManager.Dispose();
+        if (_logWriter != null)
+        {
+          _logWriter.Flush();
+          _logWriter.Dispose();
+          _logWriter = null;
+        }
+
+        if (_logStream != null)
+        {
+          _logStream.Dispose();
+          _logStream = null;
+        }
+
+        _jobManager?.Dispose();
       }
+
+      base.Dispose(disposing);
     }
 
-    protected override void OnContextMenuOpening(CancelEventArgs e)
+    protected override void OnInitializeContextMenu()
     {
       this.ContextMenu.Items.Add("&Settings...", Resources.Settings, this.SettingsContextMenuClickHandler).Font = new Font(this.ContextMenu.Font, FontStyle.Bold);
+      this.ContextMenu.Items.Add("Open &Log", null, this.OpenLogContextMenuClickHandler);
       this.ContextMenu.Items.Add("-");
       this.ContextMenu.Items.Add("&Run Now", Resources.Run, this.RunNowContextMenuClickHandler);
       this.ContextMenu.Items.Add("-");
-      this.ContextMenu.Items.Add("Open &Log", null, this.LogContextMenuClickHandler);
-      this.ContextMenu.Items.Add("-");
-      this.ContextMenu.Items.Add("&About", null, this.AboutContextMenuClickHandler);
-      this.ContextMenu.Items.Add("-");
       this.ContextMenu.Items.Add("E&xit", null, this.ExitContextMenuClickHandler);
 
-      base.OnContextMenuOpening(e);
+      base.OnInitializeContextMenu();
     }
 
     protected override void OnTrayIconDoubleClick(MouseEventArgs e)
@@ -105,54 +112,89 @@ namespace Cyotek.AzureContainerEcho.Client
 
     #region Private Methods
 
-    private void AboutContextMenuClickHandler(object sender, EventArgs eventArgs)
-    {
-      this.ShowDialog(ref _aboutDialog, null);
-    }
-
     private void ExitContextMenuClickHandler(object sender, EventArgs eventArgs)
     {
       this.ExitThread();
     }
 
+    private void InitializeLog()
+    {
+      _logFileName = Path.ChangeExtension(Application.ExecutablePath, ".log");
+
+      _logStream = File.Open(_logFileName, FileMode.Append, FileAccess.Write, FileShare.Read);
+      _logWriter = new StreamWriter(_logStream, Encoding.UTF8);
+    }
+
     private void JobManagerTaskCancelledHandler(object sender, ScheduledTaskEventArgs e)
     {
-      this.WriteLog("Task Cancelled: {0}", e.Task.Name);
+      this.Log(string.Format("Task Cancelled: {0}", e.Task.Name));
 
       this.SetIcon();
     }
 
     private void JobManagerTaskCompletedHandler(object sender, ScheduledTaskEventArgs e)
     {
-      this.WriteLog("Task Complete: {0}", e.Task.Name);
+      this.Log(string.Format("Task Complete: {0}", e.Task.Name));
 
       this.SetIcon();
     }
 
     private void JobManagerTaskExceptionHandler(object sender, ScheduledTaskExceptionEventArgs e)
     {
-      this.WriteLog("Task Failed: {0}\n{1}", e.Task.Name, e.Exception.Message);
+      this.Log(string.Format("Task Failed: {0}\n{1}", e.Task.Name, e.Exception.Message));
 
       this.TrayIcon.ShowBalloonTip(10000, e.Task.Name, e.Exception.GetBaseException().Message, ToolTipIcon.Error);
     }
 
     private void JobManagerTaskStartedHandler(object sender, ScheduledTaskEventArgs e)
     {
-      this.WriteLog("Task Started: {0}", e.Task.Name);
+      this.Log(string.Format("Task Started: {0}", e.Task.Name));
 
       this.SetIcon();
     }
 
-    private void LogContextMenuClickHandler(object sender, EventArgs e)
+    private void LoadLegacySettings()
     {
-      try
+      string fileName;
+
+      fileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "cyotek.azurecontainerecho.jobs.json");
+
+      if (File.Exists(fileName))
       {
-        Process.Start(_logFileName);
+        Json.ParseFileInto(fileName, _jobManager.Settings.Jobs);
       }
-      catch (Exception ex)
+    }
+
+    private void LoadSettings()
+    {
+      _settingsFileName = Path.ChangeExtension(Application.ExecutablePath, ".json");
+
+      if (File.Exists(_settingsFileName))
       {
-        MessageBox.Show(ex.GetBaseException().Message, Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
+        _jobManager.Settings = Json.ParseFile<ContainerEchoSettings>(_settingsFileName);
       }
+      else
+      {
+        this.LoadLegacySettings();
+      }
+    }
+
+    private void Log(string text)
+    {
+#if DEBUG
+      System.Diagnostics.Debug.WriteLine(text);
+#endif
+
+      _logWriter.Write(_jobManager.Settings.LogDatesAsUtc ? DateTime.UtcNow : DateTime.Now);
+      _logWriter.Write('\t');
+      _logWriter.WriteLine(text);
+
+      _logWriter.Flush();
+    }
+
+    private void OpenLogContextMenuClickHandler(object sender, EventArgs e)
+    {
+      AboutPanel.OpenUrl(_logFileName);
     }
 
     private void RunNowContextMenuClickHandler(object sender, EventArgs e)
@@ -161,6 +203,11 @@ namespace Cyotek.AzureContainerEcho.Client
       {
         task.Start((ITaskContext)_jobManager.Scheduler);
       }
+    }
+
+    private void SaveSettings()
+    {
+      Json.WriteFile(_settingsFileName, _jobManager.Settings, JsonOptions.WriteWhitespace);
     }
 
     private void SetIcon()
@@ -193,35 +240,26 @@ namespace Cyotek.AzureContainerEcho.Client
       this.ShowSettings();
     }
 
-    private void ShowDialog<T>(ref T localReference, Action<T> initialization) where T : Form, new()
+    private void ShowSettings()
     {
-      if (localReference == null)
+      if (_settingsDialog == null)
       {
-        using (localReference = new T())
+        using (_settingsDialog = new SettingsDialog
         {
-          if (initialization != null)
+          Settings = _jobManager.Settings
+        })
+        {
+          if (_settingsDialog.ShowDialog() == DialogResult.OK)
           {
-            initialization(localReference);
+            this.SaveSettings();
           }
-
-          localReference.ShowDialog();
         }
-        localReference = null;
+        _settingsDialog = null;
       }
       else
       {
-        localReference.Activate();
+        _settingsDialog.Activate();
       }
-    }
-
-    private void ShowSettings()
-    {
-      this.ShowDialog(ref _settingsDialog, dialog => { dialog.Manager = _jobManager; });
-    }
-
-    private void WriteLog(string format, params object[] args)
-    {
-      File.AppendAllText(_logFileName, string.Concat(DateTime.UtcNow.ToShortDateString(), " ", DateTime.UtcNow.ToShortTimeString(), "\t", string.Format(format, args), Environment.NewLine));
     }
 
     #endregion Private Methods

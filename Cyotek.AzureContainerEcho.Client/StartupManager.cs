@@ -1,8 +1,4 @@
-﻿using Microsoft.Win32;
-using System;
-using System.Windows.Forms;
-
-// Azure Container Echo
+﻿// Azure Container Echo
 // https://github.com/cyotek/Cyotek.AzureContainerEcho
 
 // Copyright © 2013-2021 Cyotek Ltd. All Rights Reserved.
@@ -12,6 +8,10 @@ using System.Windows.Forms;
 
 // Found this example useful?
 // https://www.paypal.me/cyotek
+
+using Microsoft.Win32;
+using System;
+using System.Windows.Forms;
 
 namespace Cyotek
 {

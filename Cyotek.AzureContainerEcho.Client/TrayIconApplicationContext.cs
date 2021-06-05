@@ -1,8 +1,4 @@
-﻿using System;
-using System.ComponentModel;
-using System.Windows.Forms;
-
-// Creating long running Windows Forms applications without a start-up form
+﻿// Creating long running Windows Forms applications without a start-up form
 // https://devblog.cyotek.com/post/creating-long-running-windows-forms-applications-without-a-start-up-form
 
 // Copyright © 2013-2021 Cyotek Ltd. All Rights Reserved.
@@ -13,6 +9,10 @@ using System.Windows.Forms;
 // Found this example useful?
 // https://www.paypal.me/cyotek
 
+using System;
+using System.ComponentModel;
+using System.Windows.Forms;
+
 namespace Cyotek
 {
   internal abstract class TrayIconApplicationContext : ApplicationContext
@@ -21,11 +21,11 @@ namespace Cyotek
 
     private const string _placeholderMenuName = "#dummy";
 
-    private ContextMenuStrip _contextMenu;
+    private readonly ContextMenuStrip _contextMenu;
+
+    private readonly NotifyIcon _notifyIcon;
 
     private bool _contextMenuLoaded;
-
-    private NotifyIcon _notifyIcon;
 
     #endregion Private Fields
 
@@ -55,22 +55,17 @@ namespace Cyotek
 
     #endregion Protected Constructors
 
+    #region Public Properties
+
+    protected bool InvokeRequired => _contextMenu.InvokeRequired;
+
+    #endregion Public Properties
+
     #region Protected Properties
 
-    protected ContextMenuStrip ContextMenu
-    {
-      get { return _contextMenu; }
-    }
+    protected ContextMenuStrip ContextMenu => _contextMenu;
 
-    protected bool InvokeRequired
-    {
-      get { return _contextMenu.InvokeRequired; }
-    }
-
-    protected NotifyIcon TrayIcon
-    {
-      get { return _notifyIcon; }
-    }
+    protected NotifyIcon TrayIcon => _notifyIcon;
 
     #endregion Protected Properties
 
@@ -84,7 +79,6 @@ namespace Cyotek
         {
           _contextMenu.Opening -= this.ContextMenuOpeningHandler;
           _contextMenu.Dispose();
-          _contextMenu = null;
         }
 
         if (_notifyIcon != null)
@@ -92,7 +86,6 @@ namespace Cyotek
           _notifyIcon.MouseDoubleClick += this.TrayIconDoubleClickHandler;
           _notifyIcon.MouseClick += this.TrayIconClickHandler;
           _notifyIcon.Dispose();
-          _notifyIcon = null;
         }
       }
 
