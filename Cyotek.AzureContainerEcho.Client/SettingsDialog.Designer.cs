@@ -106,12 +106,10 @@ namespace Cyotek.AzureContainerEcho.Client
       // webLinkLabel
       // 
       this.webLinkLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-      this.webLinkLabel.AutoSize = true;
       this.webLinkLabel.Location = new System.Drawing.Point(12, 531);
       this.webLinkLabel.Name = "webLinkLabel";
-      this.webLinkLabel.Size = new System.Drawing.Size(89, 13);
+      this.webLinkLabel.Size = new System.Drawing.Size(83, 14);
       this.webLinkLabel.TabIndex = 13;
-      this.webLinkLabel.TabStop = true;
       this.webLinkLabel.Text = "www.cyotek.com";
       this.webLinkLabel.Click += new System.EventHandler(this.WebLinkLabel_Click);
       // 
@@ -133,7 +131,7 @@ namespace Cyotek.AzureContainerEcho.Client
       this.ShowIcon = true;
       this.ShowInTaskbar = true;
       this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-      this.Text = "Cyotek Down Detector";
+      this.Text = "Cyotek Azure Container Echo Client";
       this.tabList.ResumeLayout(false);
       this.ResumeLayout(false);
       this.PerformLayout();
