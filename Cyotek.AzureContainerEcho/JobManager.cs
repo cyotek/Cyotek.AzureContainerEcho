@@ -183,22 +183,21 @@ namespace Cyotek.AzureContainerEcho
 
     public void Schedule(EchoScheduledTaskOptions options)
     {
-      IScheduledTask job;
+      if (options.Enabled)
+      {
+        IScheduledTask job;
 
 #if DEBUG
-      System.Diagnostics.Debug.WriteLine("Scheduling: " + options.Id);
+        System.Diagnostics.Debug.WriteLine("Scheduling: " + options.Id);
 #endif
 
-      job = new EchoScheduledTask
-      {
-        Name = options.ContainerName,
-        RepeatingInterval = options.Interval
-      };
-      job.Data["Options"] = options;
+        job = new EchoScheduledTask {Name = options.ContainerName, RepeatingInterval = options.Interval};
+        job.Data["Options"] = options;
 
-      _scheduler.Add(job);
+        _scheduler.Add(job);
 
-      _jobData.Add(options);
+        _jobData.Add(options);
+      }
     }
 
     /// <summary>
