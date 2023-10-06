@@ -1,18 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31313.79
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cyotek.AzureContainerEcho.Client", "Cyotek.AzureContainerEcho.Client\Cyotek.AzureContainerEcho.Client.csproj", "{191C65AC-3268-42C6-B687-9F0A764FFEF5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cyotek.AzureContainerEcho", "Cyotek.AzureContainerEcho\Cyotek.AzureContainerEcho.csproj", "{4241C857-21DE-4CE4-A527-2898CC448866}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Files", "Solution Files", "{33FD6803-0476-4EDD-88B5-42C90F33BCA7}"
-	ProjectSection(SolutionItems) = preProject
-		CHANGELOG.md = CHANGELOG.md
-		LICENSE.txt = LICENSE.txt
-		README.md = README.md
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,5 +24,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {AF15CD08-7AC9-45A2-9543-D0E97C720F6D}
 	EndGlobalSection
 EndGlobal

@@ -1,279 +1,152 @@
 ﻿// Azure Container Echo
 // https://github.com/cyotek/Cyotek.AzureContainerEcho
-// Copyright © 2013-2018 Cyotek Ltd. All Rights Reserved.
 
-// Licensed under the MIT License. See LICENSE.txt for the full text.
+// Copyright © 2013-2021 Cyotek Ltd. All Rights Reserved.
 
-// Found this example useful? 
+// This work is licensed under the MIT License.
+// See LICENSE.txt for the full text
+
+// Found this example useful?
 // https://www.paypal.me/cyotek
 
+using Cyotek.AzureContainerEcho.Client.Properties;
+using Cyotek.Demo.Windows.Forms;
+using Cyotek.Windows.Forms;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
+using System.ComponentModel;
 using System.Windows.Forms;
 
 namespace Cyotek.AzureContainerEcho.Client
 {
   internal partial class SettingsDialog : BaseForm
   {
-    #region Constants
+    #region Private Fields
 
-    private readonly List<EchoScheduledTaskOptions> _jobs;
+    private ContainerEchoSettings _settings;
 
-    #endregion
+    #endregion Private Fields
 
-    #region Constructors
+    #region Public Constructors
 
     public SettingsDialog()
     {
       this.InitializeComponent();
-
-      _jobs = new List<EchoScheduledTaskOptions>();
     }
 
-    public SettingsDialog(JobManager manager)
-      : this()
+    #endregion Public Constructors
+
+    #region Public Properties
+
+    [Browsable(false)]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+    public ContainerEchoSettings Settings
     {
-      this.Manager = manager;
+      get => _settings;
+      set => _settings = value;
     }
 
-    #endregion
+    #endregion Public Properties
 
-    #region Properties
-
-    public JobManager Manager { get; set; }
-
-    #endregion
-
-    #region Methods
+    #region Protected Methods
 
     protected override void OnLoad(EventArgs e)
     {
       base.OnLoad(e);
 
-      foreach (EchoScheduledTaskOptions job in this.Manager)
-      {
-        _jobs.Add(job.Clone());
-      }
+      this.Icon = Resources.ApplicationIcon;
 
-      try
-      {
-        startWithWindowsCheckBox.Checked = StartupManager.IsRegisteredForStartup();
-      }
-      catch (Exception ex)
-      {
-        MessageBox.Show(string.Format("Failed to obtain startup status. {0}", ex.GetBaseException().Message), this.Text, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-      }
-
-      foreach (EchoScheduledTaskOptions job in _jobs)
-      {
-        this.ListJob(job);
-      }
+      // selecting event isn't called on first load
+      this.TabList_Selected(tabList, new TabListEventArgs(tabList.SelectedPage, tabList.SelectedIndex, TabListAction.Selected));
     }
 
-    protected override void OnShown(EventArgs e)
+    #endregion Protected Methods
+
+    #region Private Methods
+
+    private void AddPage<T>(TabListPage host)
+      where T : UserControl, new()
     {
-      base.OnShown(e);
+      T control;
 
-      this.Activate();
+      control = new T()
+      {
+        Dock = DockStyle.Fill
+      };
+
+      if (control is SettingsPanelBase settingsPanel)
+      {
+        settingsPanel.LoadSettings(_settings);
+      }
+
+      host.Controls.Add(control);
     }
 
-    private void addButton_Click(object sender, EventArgs e)
-    {
-      this.ShowJobSettings(new EchoScheduledTaskOptions());
-    }
-
-    private void ApplySettings()
-    {
-      List<EchoScheduledTaskOptions> matchingJobs;
-
-      // update registry
-      try
-      {
-        if (StartupManager.IsRegisteredForStartup() != startWithWindowsCheckBox.Checked)
-        {
-          if (startWithWindowsCheckBox.Checked)
-          {
-            StartupManager.RegisterStartupApplication();
-          }
-          else
-          {
-            StartupManager.UnregisterStartupApplication();
-          }
-        }
-      }
-      catch (Exception ex)
-      {
-        MessageBox.Show(string.Format("Failed to process startup changes. {0}", ex.GetBaseException().Message), this.Text, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-      }
-
-      // first remove deleted jobs
-      matchingJobs = this.Manager.Where(j => _jobs.All(j2 => j.Id != j2.Id)).ToList();
-      foreach (EchoScheduledTaskOptions options in matchingJobs)
-      {
-        this.Manager.KillJob(options.Id);
-      }
-
-      // remove and re-add any changed jobs
-      foreach (EchoScheduledTaskOptions options in _jobs)
-      {
-        EchoScheduledTaskOptions originalJob;
-
-        originalJob = this.Manager.SingleOrDefault(j => j.Id == options.Id);
-        if (originalJob != null && !options.Equals(originalJob))
-        {
-          this.Manager.KillJob(originalJob.Id);
-
-          this.Manager.Schedule(options);
-        }
-      }
-
-      // now add the new jobs
-      matchingJobs = _jobs.Where(j => this.Manager.All(j2 => j.Id != j2.Id)).ToList();
-      foreach (EchoScheduledTaskOptions options in matchingJobs)
-      {
-        this.Manager.Schedule(options);
-      }
-
-      this.Manager.Save();
-    }
-
-    private void cancelButton_Click(object sender, EventArgs e)
+    private void CancelButton_Click(object sender, EventArgs e)
     {
       this.DialogResult = DialogResult.Cancel;
       this.Close();
     }
 
-    private void containersListView_ItemActivate(object sender, EventArgs e)
+    private IEnumerable<SettingsPanelBase> GetSettingsPanels()
     {
-      editButton.PerformClick();
-    }
-
-    private void containersListView_SelectedIndexChanged(object sender, EventArgs e)
-    {
-      bool enabled;
-
-      enabled = containersListView.SelectedItems.Count != 0;
-      editButton.Enabled = enabled;
-      removeButton.Enabled = enabled;
-      duplicateButton.Enabled = enabled;
-    }
-
-    private void duplicateButton_Click(object sender, EventArgs e)
-    {
-      List<EchoScheduledTaskOptions> jobs;
-
-      jobs = containersListView.SelectedItems.Cast<ListViewItem>().Select(i => _jobs.Find(j => j.Id == new Guid(i.Name))).ToList();
-
-      foreach (EchoScheduledTaskOptions job in jobs)
+      foreach (TabListPage page in tabList.TabListPages)
       {
-        EchoScheduledTaskOptions clone;
-
-        clone = new EchoScheduledTaskOptions
-                {
-                  Enabled = false,
-                  AccountKey = job.AccountKey,
-                  AccountName = job.AccountName,
-                  AllowUploads = job.AllowUploads,
-                  CheckForNewFilesOnly = job.CheckForNewFilesOnly,
-                  ContainerName = job.ContainerName,
-                  DeleteAfterDownload = job.DeleteAfterDownload,
-                  Interval = job.Interval,
-                  LocalPath = job.LocalPath
-                };
-
-        _jobs.Add(clone);
-
-        this.ListJob(clone);
-      }
-    }
-
-    private void editButton_Click(object sender, EventArgs e)
-    {
-      EchoScheduledTaskOptions options;
-
-      options = _jobs.Find(j => j.Id == new Guid(containersListView.SelectedItems[0].Name));
-      if (options != null)
-      {
-        this.ShowJobSettings(options);
-      }
-    }
-
-    private void ListJob(EchoScheduledTaskOptions job)
-    {
-      ListViewItem item;
-      string key;
-
-      key = job.Id.ToString();
-
-      if (!containersListView.Items.ContainsKey(key))
-      {
-        item = new ListViewItem
-               {
-                 Name = key
-               };
-
-        for (int i = 0; i < containersListView.Columns.Count; i++)
+        if (page.Controls.Count == 1 && page.Controls[0] is SettingsPanelBase settingsPanel)
         {
-          item.SubItems.Add(string.Empty);
+          yield return settingsPanel;
         }
-
-        containersListView.Items.Add(item);
       }
-      else
-      {
-        item = containersListView.Items[key];
-      }
-
-      item.SubItems[0].Text = job.AccountName;
-      item.SubItems[1].Text = job.ContainerName;
-      item.SubItems[2].Text = job.LocalPath;
-      item.ForeColor = job.Enabled ? SystemColors.WindowText : SystemColors.GrayText;
     }
 
-    private void okButton_Click(object sender, EventArgs e)
+    private void OkButton_Click(object sender, EventArgs e)
     {
-      this.ApplySettings();
+      this.SaveSettings();
 
       this.DialogResult = DialogResult.OK;
       this.Close();
     }
 
-    private void removeButton_Click(object sender, EventArgs e)
+    private void SaveSettings()
     {
-      if (MessageBox.Show("Are you sure you want to remove the selected jobs?", "Remove Jobs", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+      foreach (SettingsPanelBase settingsPanel in this.GetSettingsPanels())
       {
-        List<EchoScheduledTaskOptions> jobsToRemove;
+        settingsPanel.SaveSettings(_settings);
+      }
+    }
 
-        jobsToRemove = containersListView.SelectedItems.Cast<ListViewItem>().Select(i => _jobs.Find(j => j.Id == new Guid(i.Name))).ToList();
+    private void TabList_Selected(object sender, TabListEventArgs e)
+    {
+      TabListPage page;
 
-        foreach (EchoScheduledTaskOptions job in jobsToRemove)
+      page = e.TabListPage;
+
+      if (page?.Controls.Count == 0)
+      {
+        if (object.ReferenceEquals(page, accountsTabListPage))
         {
-          _jobs.Remove(job);
-          containersListView.Items.RemoveByKey(job.Id.ToString());
+          this.AddPage<AccountsPanel>(page);
+        }
+        else if (object.ReferenceEquals(page, settingsTabListPage))
+        {
+          this.AddPage<SettingsPanel>(page);
+        }
+        else if (object.ReferenceEquals(page, aboutTabListPage))
+        {
+          this.AddPage<AboutPanel>(page);
+        }
+        else if (object.ReferenceEquals(page, logTabListPage))
+        {
+          this.AddPage<LogViewerPanel>(page);
         }
       }
     }
 
-    private void ShowJobSettings(EchoScheduledTaskOptions options)
+    private void WebLinkLabel_Click(object sender, EventArgs e)
     {
-      using (Form dialog = new AccountPropertiesDialog(options))
-      {
-        dialog.Text = string.Format("{0} Account", _jobs.Contains(options) ? "Edit" : "Add");
-
-        if (dialog.ShowDialog(this) == DialogResult.OK)
-        {
-          if (!_jobs.Contains(options))
-          {
-            _jobs.Add(options);
-          }
-
-          this.ListJob(options);
-        }
-      }
+      AboutPanel.OpenCyotekHomePage();
     }
 
-    #endregion
+    #endregion Private Methods
   }
 }

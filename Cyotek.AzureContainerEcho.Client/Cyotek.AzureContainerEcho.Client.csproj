@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Cyotek.AzureContainerEcho.Client</RootNamespace>
     <AssemblyName>cyoazdwn</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -41,43 +41,41 @@
   <PropertyGroup>
     <AssemblyOriginatorKeyFile>cyopublic.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
+  <PropertyGroup />
+  <PropertyGroup>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Cyotek.TaskScheduler, Version=1.0.0.0, Culture=neutral, PublicKeyToken=9d164292f52c48c9, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\lib\Cyotek.TaskScheduler.dll</HintPath>
     </Reference>
     <Reference Include="Cyotek.Windows.Forms.TabList, Version=2.0.0.0, Culture=neutral, PublicKeyToken=58daa28b0b2de221, processorArchitecture=MSIL">
-      <HintPath>..\packages\CyotekTabList.2.0.0\lib\net35\Cyotek.Windows.Forms.TabList.dll</HintPath>
+      <HintPath>..\packages\CyotekTabList.2.2.0\lib\net35\Cyotek.Windows.Forms.TabList.dll</HintPath>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Data.Services.Client" />
-    <Reference Include="System.Design" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Deployment" />
+    <Reference Include="System.Design" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AboutDialog.cs">
-      <SubType>Form</SubType>
+    <Compile Include="AboutPanel.cs">
+      <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="AboutDialog.designer.cs">
-      <DependentUpon>AboutDialog.cs</DependentUpon>
+    <Compile Include="AboutPanel.designer.cs">
+      <DependentUpon>AboutPanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AccountCollectionEditor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AccountCollectionEditor.Designer.cs">
+      <DependentUpon>AccountCollectionEditor.cs</DependentUpon>
     </Compile>
     <Compile Include="ApplicationContext.cs" />
     <Compile Include="BaseForm.cs">
       <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="BaseForm.designer.cs">
-      <DependentUpon>BaseForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="GroupBox.cs">
-      <SubType>Component</SubType>
     </Compile>
     <Compile Include="AccountPropertiesDialog.cs">
       <SubType>Form</SubType>
@@ -88,34 +86,58 @@
     <Compile Include="Line.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="LinkLabel.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="ListView.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="LogViewerPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="LogViewerPanel.designer.cs">
+      <DependentUpon>LogViewerPanel.cs</DependentUpon>
+    </Compile>
     <Compile Include="NativeMethods.cs" />
+    <Compile Include="PetaJson.cs" />
+    <Compile Include="ReverseLineReader.cs" />
     <Compile Include="SettingsDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="SettingsDialog.Designer.cs">
+    <Compile Include="SettingsDialog.designer.cs">
       <DependentUpon>SettingsDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="AccountsPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AccountsPanel.designer.cs">
+      <DependentUpon>AccountsPanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SettingsPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="SettingsPanel.designer.cs">
+      <DependentUpon>SettingsPanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SettingsPanelBase.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="StreamUtil.cs" />
     <Compile Include="TrayIconApplicationContext.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StartupManager.cs" />
-    <Compile Include="TreeView.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <EmbeddedResource Include="AboutDialog.resx">
-      <DependentUpon>AboutDialog.cs</DependentUpon>
+    <EmbeddedResource Include="AboutPanel.resx">
+      <DependentUpon>AboutPanel.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="BaseForm.resx">
-      <DependentUpon>BaseForm.cs</DependentUpon>
+    <EmbeddedResource Include="AccountCollectionEditor.resx">
+      <DependentUpon>AccountCollectionEditor.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="AccountPropertiesDialog.resx">
       <DependentUpon>AccountPropertiesDialog.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SettingsDialog.resx">
-      <DependentUpon>SettingsDialog.cs</DependentUpon>
+    <EmbeddedResource Include="LogViewerPanel.resx">
+      <DependentUpon>LogViewerPanel.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -127,14 +149,21 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <EmbeddedResource Include="SettingsDialog.resx">
+      <DependentUpon>SettingsDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AccountsPanel.resx">
+      <DependentUpon>AccountsPanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SettingsPanel.resx">
+      <DependentUpon>SettingsPanel.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Cyotek.AzureContainerEcho\Cyotek.AzureContainerEcho.csproj">
-      <Project>{4241c857-21de-4ce4-a527-2898cc448866}</Project>
-      <Name>Cyotek.AzureContainerMirror</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
+    <None Include="..\LICENSE.txt">
+      <Link>LICENSE.txt</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <Content Include="..\resources\icon-16.ico">
       <Link>Resources\icon-16.ico</Link>
     </Content>
@@ -153,7 +182,19 @@
     <Content Include="..\resources\icon.ico">
       <Link>icon.ico</Link>
     </Content>
+    <None Include="..\CHANGELOG.md">
+      <Link>CHANGELOG.md</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\README.md">
+      <Link>README.md</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="about.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="app.config" />
+    <None Include="app.manifest" />
     <None Include="packages.config" />
     <None Include="Resources\property.png" />
     <None Include="Resources\Run.png" />
@@ -161,6 +202,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="cyopublic.snk" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Cyotek.AzureContainerEcho\Cyotek.AzureContainerEcho.csproj">
+      <Project>{4241c857-21de-4ce4-a527-2898cc448866}</Project>
+      <Name>Cyotek.AzureContainerEcho</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

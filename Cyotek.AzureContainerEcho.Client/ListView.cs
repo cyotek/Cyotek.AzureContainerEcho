@@ -1,33 +1,60 @@
-﻿// Azure Container Echo
-// https://github.com/cyotek/Cyotek.AzureContainerEcho
-// Copyright © 2013-2018 Cyotek Ltd. All Rights Reserved.
+﻿// Enabling shell styles for the ListView and TreeView controls in C#
+// https://devblog.cyotek.com/post/enabling-shell-styles-for-the-listview-and-treeview-controls-in-csharp
 
-// Licensed under the MIT License. See LICENSE.txt for the full text.
+// Copyright © 2011-2021 Cyotek Ltd. All Rights Reserved.
 
-// Found this example useful? 
+// This work is licensed under the MIT License.
+// See LICENSE.txt for the full text
+
+// Found this example useful?
 // https://www.paypal.me/cyotek
 
 using System;
-
-// Enabling shell styles for the ListView and TreeView controls in C#
-// http://cyotek.com/blog/enabling-shell-styles-for-the-listview-and-treeview-controls-in-csharp
+using System.Windows.Forms;
 
 namespace Cyotek.Windows.Forms
 {
   internal class ListView : System.Windows.Forms.ListView
   {
-    #region Overridden Methods
+    #region Private Fields
+
+    private bool _ignoreEvents;
+
+    #endregion Private Fields
+
+    #region Public Constructors
+
+    public ListView()
+    {
+      base.DoubleBuffered = true;
+    }
+
+    #endregion Public Constructors
+
+    #region Protected Methods
 
     protected override void OnHandleCreated(EventArgs e)
     {
+      _ignoreEvents = true;
+
       base.OnHandleCreated(e);
 
       if (!this.DesignMode && Environment.OSVersion.Platform == PlatformID.Win32NT && Environment.OSVersion.Version.Major >= 6)
       {
         NativeMethods.SetWindowTheme(this.Handle, "explorer", null);
       }
+
+      _ignoreEvents = false;
     }
 
-    #endregion
+    protected override void OnItemChecked(ItemCheckedEventArgs e)
+    {
+      if (!_ignoreEvents)
+      {
+        base.OnItemChecked(e);
+      }
+    }
+
+    #endregion Protected Methods
   }
 }

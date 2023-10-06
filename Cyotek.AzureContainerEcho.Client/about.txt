@@ -1,0 +1,8 @@
+﻿Source code available from the GitHub repository:
+<https://github.com/cyotek/Cyotek.AzureContainerEcho>
+
+Makes use of the following third party code:
+
+* LinkLabel2: <https://wyday.com/linklabel2/>
+* PetaJson: <https://github.com/toptensoftware/JsonKit>
+* ReverseLineReader: <https://stackoverflow.com/a/452945/148962>
