@@ -1,4 +1,11 @@
-# Change Log
+# Cyotek Azure Container Echo Change Log
+
+## 2.0.1
+
+### Fixed
+
+* Now saves settings after each job execution, preventing the
+  last runtime from being lost
 
 ## 2.0
 

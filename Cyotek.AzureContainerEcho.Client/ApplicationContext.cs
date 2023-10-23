@@ -1,7 +1,7 @@
 ﻿// Azure Container Echo
 // https://github.com/cyotek/Cyotek.AzureContainerEcho
 
-// Copyright © 2013-2021 Cyotek Ltd. All Rights Reserved.
+// Copyright © 2013-2023 Cyotek Ltd. All Rights Reserved.
 
 // Licensed under the MIT License. See LICENSE.txt for the full text.
 
@@ -137,13 +137,13 @@ namespace Cyotek.AzureContainerEcho.Client
       this.Log(string.Format("Task Complete: {0}", e.Task.Name));
 
       this.SetIcon();
+
+      this.SaveSettings();
     }
 
     private void JobManagerTaskExceptionHandler(object sender, ScheduledTaskExceptionEventArgs e)
     {
-      this.Log(string.Format("Task Failed: {0}\n{1}", e.Task.Name, e.Exception.Message));
-
-      this.TrayIcon.ShowBalloonTip(10000, e.Task.Name, e.Exception.GetBaseException().Message, ToolTipIcon.Error);
+      this.LogException(e.Task.Name, e.Exception);
     }
 
     private void JobManagerTaskStartedHandler(object sender, ScheduledTaskEventArgs e)
@@ -192,6 +192,13 @@ namespace Cyotek.AzureContainerEcho.Client
       _logWriter.Flush();
     }
 
+    private void LogException(string title, Exception ex)
+    {
+      this.Log(string.Format("Task Failed: {0}\n{1}", title, ex.Message));
+
+      this.TrayIcon.ShowBalloonTip(10000, title, ex.GetBaseException().Message, ToolTipIcon.Error);
+    }
+
     private void OpenLogContextMenuClickHandler(object sender, EventArgs e)
     {
       AboutPanel.OpenUrl(_logFileName);
@@ -207,7 +214,14 @@ namespace Cyotek.AzureContainerEcho.Client
 
     private void SaveSettings()
     {
-      Json.WriteFile(_settingsFileName, _jobManager.Settings, JsonOptions.WriteWhitespace);
+      try
+      {
+        Json.WriteFile(_settingsFileName, _jobManager.Settings, JsonOptions.WriteWhitespace);
+      }
+      catch (Exception ex)
+      {
+        this.LogException("Save failed", ex);
+      }
     }
 
     private void SetIcon()
